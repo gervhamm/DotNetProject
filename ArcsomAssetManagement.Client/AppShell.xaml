@@ -13,7 +13,7 @@
         Icon="{StaticResource IconDashboard}"
         ContentTemplate="{DataTemplate pages:MainPage}"
         Route="main" />
-
+<!--
     <ShellContent
         Title="Projects"
         Icon="{StaticResource IconProjects}"
@@ -40,5 +40,5 @@
             </sf:SfSegmentedControl>
         </Grid>
     </Shell.FlyoutFooter>
-
+-->
 </Shell>

@@ -1,174 +1,254 @@
-using ArcsomAssetManagement.Client.Models;
+using ArcsomAssetManagement.Client.DTOs.Auth;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using Newtonsoft.Json;
+using System.Text;
 
-namespace ArcsomAssetManagement.Client.PageModels
+namespace ArcsomAssetManagement.Client.PageModels;
+
+public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel TODO: BaseViewModel met default reauste header with bearer
 {
-    public partial class MainPageModel : ObservableObject, IProjectTaskPageModel
+    private readonly HttpClient _httpClient;
+
+
+    public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
+        TaskRepository taskRepository, CategoryRepository categoryRepository, ModalErrorHandler errorHandler)
     {
-        private bool _isNavigatedTo;
-        private bool _dataLoaded;
-        private readonly ProjectRepository _projectRepository;
-        private readonly TaskRepository _taskRepository;
-        private readonly CategoryRepository _categoryRepository;
-        private readonly ModalErrorHandler _errorHandler;
-        private readonly SeedDataService _seedDataService;
+        _httpClient = new HttpClient();
 
-        [ObservableProperty]
-        private List<CategoryChartData> _todoCategoryData = [];
+        //_projectRepository = projectRepository;
+        //_taskRepository = taskRepository;
+        //_categoryRepository = categoryRepository;
+        //_errorHandler = errorHandler;
+        //_seedDataService = seedDataService;
+    }
 
-        [ObservableProperty]
-        private List<Brush> _todoCategoryColors = [];
+    [ObservableProperty]
+    private string email;
 
-        [ObservableProperty]
-        private List<ProjectTask> _tasks = [];
+    [ObservableProperty]
+    private string password;
 
-        [ObservableProperty]
-        private List<Project> _projects = [];
+    [ObservableProperty]
+    private bool isBusy;
 
-        [ObservableProperty]
-        bool _isBusy;
+    [RelayCommand]
+    public async Task Test()
+    {
 
-        [ObservableProperty]
-        bool _isRefreshing;
+        await AppShell.DisplayToastAsync("test successful!");
+    }
 
-        [ObservableProperty]
-        private string _today = DateTime.Now.ToString("dddd, MMM d");
+    [RelayCommand]
+    public async Task LoginAsync()
+    {
+        await AppShell.DisplayToastAsync("Login successful!");
+    }
+    public async Task LoginAsync()
+    {
+        //if (IsBusy) return;
 
-        public bool HasCompletedTasks
-            => Tasks?.Any(t => t.IsCompleted) ?? false;
-
-        public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
-            TaskRepository taskRepository, CategoryRepository categoryRepository, ModalErrorHandler errorHandler)
+        try
         {
-            _projectRepository = projectRepository;
-            _taskRepository = taskRepository;
-            _categoryRepository = categoryRepository;
-            _errorHandler = errorHandler;
-            _seedDataService = seedDataService;
-        }
+            IsBusy = true;
 
-        private async Task LoadData()
-        {
-            try
+            var loginDto = new LoginDto
             {
-                IsBusy = true;
+                Email = Email,
+                Password = Password
+            };
 
-                Projects = await _projectRepository.ListAsync();
+            var json = JsonConvert.SerializeObject(loginDto);
+            var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-                var chartData = new List<CategoryChartData>();
-                var chartColors = new List<Brush>();
+            var response = await _httpClient.PostAsync("https://yourapiurl.com/api/auth/login", content);
 
-                var categories = await _categoryRepository.ListAsync();
-                foreach (var category in categories)
-                {
-                    chartColors.Add(category.ColorBrush);
+            if (response.IsSuccessStatusCode)
+            {
+                var result = await response.Content.ReadAsStringAsync();
+                var token = JsonConvert.DeserializeObject<TokenResponse>(result).Token;
 
-                    var ps = Projects.Where(p => p.CategoryID == category.ID).ToList();
-                    int tasksCount = ps.SelectMany(p => p.Tasks).Count();
+                await SecureStorage.SetAsync("auth_token", token);
 
-                    chartData.Add(new(category.Title, tasksCount));
-                }
+                await AppShell.DisplayToastAsync("Login successful!");
 
-                TodoCategoryData = chartData;
-                TodoCategoryColors = chartColors;
-
-                Tasks = await _taskRepository.ListAsync();
+                // TODO: await Shell.Current.GoToAsync("//home");
             }
-            finally
+            else
             {
-                IsBusy = false;
-                OnPropertyChanged(nameof(HasCompletedTasks));
+                await AppShell.DisplaySnackbarAsync("Login failed. Please check your credentials.");
             }
         }
-
-        private async Task InitData(SeedDataService seedDataService)
+        catch (Exception ex)
         {
-            bool isSeeded = Preferences.Default.ContainsKey("is_seeded");
-
-            if (!isSeeded)
-            {
-                await seedDataService.LoadSeedDataAsync();
-            }
-
-            Preferences.Default.Set("is_seeded", true);
-            await Refresh();
+            await AppShell.DisplaySnackbarAsync($"An error occurred: {ex.Message}");
         }
-
-        [RelayCommand]
-        private async Task Refresh()
+        finally
         {
-            try
-            {
-                IsRefreshing = true;
-                await LoadData();
-            }
-            catch (Exception e)
-            {
-                _errorHandler.HandleError(e);
-            }
-            finally
-            {
-                IsRefreshing = false;
-            }
-        }
-
-        [RelayCommand]
-        private void NavigatedTo() =>
-            _isNavigatedTo = true;
-
-        [RelayCommand]
-        private void NavigatedFrom() =>
-            _isNavigatedTo = false;
-
-        [RelayCommand]
-        private async Task Appearing()
-        {
-            if (!_dataLoaded)
-            {
-                await InitData(_seedDataService);
-                _dataLoaded = true;
-                await Refresh();
-            }
-            // This means we are being navigated to
-            else if (!_isNavigatedTo)
-            {
-                await Refresh();
-            }
-        }
-
-        [RelayCommand]
-        private Task TaskCompleted(ProjectTask task)
-        {
-            OnPropertyChanged(nameof(HasCompletedTasks));
-            return _taskRepository.SaveItemAsync(task);
-        }
-
-        [RelayCommand]
-        private Task AddTask()
-            => Shell.Current.GoToAsync($"task");
-
-        [RelayCommand]
-        private Task NavigateToProject(Project project)
-            => Shell.Current.GoToAsync($"project?id={project.ID}");
-
-        [RelayCommand]
-        private Task NavigateToTask(ProjectTask task)
-            => Shell.Current.GoToAsync($"task?id={task.ID}");
-
-        [RelayCommand]
-        private async Task CleanTasks()
-        {
-            var completedTasks = Tasks.Where(t => t.IsCompleted).ToList();
-            foreach (var task in completedTasks)
-            {
-                await _taskRepository.DeleteItemAsync(task);
-                Tasks.Remove(task);
-            }
-
-            OnPropertyChanged(nameof(HasCompletedTasks));
-            Tasks = new(Tasks);
-            await AppShell.DisplayToastAsync("All cleaned up!");
+            IsBusy = false;
         }
     }
+
+    private class TokenResponse
+    {
+        public string Token { get; set; }
+    }
+
+
+    //private bool _isNavigatedTo;
+    //private bool _dataLoaded;
+    //private readonly ProjectRepository _projectRepository;
+    //private readonly TaskRepository _taskRepository;
+    //private readonly CategoryRepository _categoryRepository;
+    //private readonly ModalErrorHandler _errorHandler;
+    //private readonly SeedDataService _seedDataService;
+
+    //[ObservableProperty]
+    //private List<CategoryChartData> _todoCategoryData = [];
+
+    //[ObservableProperty]
+    //private List<Brush> _todoCategoryColors = [];
+
+    //[ObservableProperty]
+    //private List<ProjectTask> _tasks = [];
+
+    //[ObservableProperty]
+    //private List<Project> _projects = [];
+
+    //[ObservableProperty]
+    //bool _isBusy;
+
+    //[ObservableProperty]
+    //bool _isRefreshing;
+
+    //[ObservableProperty]
+    //private string _today = DateTime.Now.ToString("dddd, MMM d");
+
+    //public bool HasCompletedTasks
+    //    => Tasks?.Any(t => t.IsCompleted) ?? false;
+
+
+
+    //    private async Task LoadData()
+    //    {
+    //        try
+    //        {
+    //            IsBusy = true;
+
+    //            Projects = await _projectRepository.ListAsync();
+
+    //            var chartData = new List<CategoryChartData>();
+    //            var chartColors = new List<Brush>();
+
+    //            var categories = await _categoryRepository.ListAsync();
+    //            foreach (var category in categories)
+    //            {
+    //                chartColors.Add(category.ColorBrush);
+
+    //                var ps = Projects.Where(p => p.CategoryID == category.ID).ToList();
+    //                int tasksCount = ps.SelectMany(p => p.Tasks).Count();
+
+    //                chartData.Add(new(category.Title, tasksCount));
+    //            }
+
+    //            TodoCategoryData = chartData;
+    //            TodoCategoryColors = chartColors;
+
+    //            Tasks = await _taskRepository.ListAsync();
+    //        }
+    //        finally
+    //        {
+    //            IsBusy = false;
+    //            OnPropertyChanged(nameof(HasCompletedTasks));
+    //        }
+    //    }
+
+    //    private async Task InitData(SeedDataService seedDataService)
+    //    {
+    //        bool isSeeded = Preferences.Default.ContainsKey("is_seeded");
+
+    //        if (!isSeeded)
+    //        {
+    //            await seedDataService.LoadSeedDataAsync();
+    //        }
+
+    //        Preferences.Default.Set("is_seeded", true);
+    //        await Refresh();
+    //    }
+
+    //    [RelayCommand]
+    //    private async Task Refresh()
+    //    {
+    //        try
+    //        {
+    //            IsRefreshing = true;
+    //            await LoadData();
+    //        }
+    //        catch (Exception e)
+    //        {
+    //            _errorHandler.HandleError(e);
+    //        }
+    //        finally
+    //        {
+    //            IsRefreshing = false;
+    //        }
+    //    }
+
+    //    [RelayCommand]
+    //    private void NavigatedTo() =>
+    //        _isNavigatedTo = true;
+
+    //    [RelayCommand]
+    //    private void NavigatedFrom() =>
+    //        _isNavigatedTo = false;
+
+    //    [RelayCommand]
+    //    private async Task Appearing()
+    //    {
+    //        if (!_dataLoaded)
+    //        {
+    //            await InitData(_seedDataService);
+    //            _dataLoaded = true;
+    //            await Refresh();
+    //        }
+    //        // This means we are being navigated to
+    //        else if (!_isNavigatedTo)
+    //        {
+    //            await Refresh();
+    //        }
+    //    }
+
+    //    [RelayCommand]
+    //    private Task TaskCompleted(ProjectTask task)
+    //    {
+    //        OnPropertyChanged(nameof(HasCompletedTasks));
+    //        return _taskRepository.SaveItemAsync(task);
+    //    }
+
+    //    [RelayCommand]
+    //    private Task AddTask()
+    //        => Shell.Current.GoToAsync($"task");
+
+    //    [RelayCommand]
+    //    private Task NavigateToProject(Project project)
+    //        => Shell.Current.GoToAsync($"project?id={project.ID}");
+
+    //    [RelayCommand]
+    //    private Task NavigateToTask(ProjectTask task)
+    //        => Shell.Current.GoToAsync($"task?id={task.ID}");
+
+    //    [RelayCommand]
+    //    private async Task CleanTasks()
+    //    {
+    //        var completedTasks = Tasks.Where(t => t.IsCompleted).ToList();
+    //        foreach (var task in completedTasks)
+    //        {
+    //            await _taskRepository.DeleteItemAsync(task);
+    //            Tasks.Remove(task);
+    //        }
+
+    //        OnPropertyChanged(nameof(HasCompletedTasks));
+    //        Tasks = new(Tasks);
+    //        await AppShell.DisplayToastAsync("All cleaned up!");
+    //    }
 }

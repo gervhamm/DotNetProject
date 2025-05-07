@@ -25,9 +25,49 @@
     <ContentPage.Resources>
         <ResourceDictionary>
             <toolkit:InvertedBoolConverter x:Key="InvertedBoolConverter" />
+
+            <x:Double x:Key="MaximumWidth">500</x:Double>
+            
         </ResourceDictionary>
     </ContentPage.Resources>
 
+    <VerticalStackLayout Spacing="{StaticResource LayoutSpacing}" Padding="{StaticResource LayoutPadding}">
+        <Image Source="logo_blauw.png" 
+               HorizontalOptions="Center" 
+               VerticalOptions="Start" 
+               HeightRequest="100" />
+
+        <Label Text="Email:" 
+               Style="{StaticResource Body1}"
+                MaximumWidthRequest="{StaticResource MaximumWidth}"/>
+        <Entry Text="{Binding Email}" 
+               x:Name="EmailEntry"
+               MaximumWidthRequest="{StaticResource MaximumWidth}"
+               IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
+
+        <Label Text="Password:" 
+               Style="{StaticResource Body1}"
+               MaximumWidthRequest="{StaticResource MaximumWidth}"/>
+        <Entry Text="{Binding Password}" 
+               x:Name="PasswordEntry"
+               IsPassword="True"
+               MaximumWidthRequest="{StaticResource MaximumWidth}"
+               IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
+        
+        <Label Text="{Binding Email}" 
+               Style="{StaticResource Body1}"
+               MaximumWidthRequest="{StaticResource MaximumWidth}"/>
+
+        <Button Text="Login" 
+               Command="{Binding LoginAsyncCommand}"
+               MaximumWidthRequest="{StaticResource MaximumWidth}"
+               IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
+        
+        <Button Text="test"
+                Command="{Binding TestCommand}"/>
+
+    </VerticalStackLayout>
+    <!--
     <Grid>
         <pullToRefresh:SfPullToRefresh
             IsRefreshing="{Binding IsRefreshing}"
@@ -82,4 +122,5 @@
             IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"
             Command="{Binding AddTaskCommand}" />
     </Grid>
+    -->
 </ContentPage>
