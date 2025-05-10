@@ -29,13 +29,18 @@ namespace ArcsomAssetManagement.Client
     		builder.Services.AddLogging(configure => configure.AddDebug());
 #endif
 
+            builder.Services.AddSingleton<MainPageModel>();
+            builder.Services.AddSingleton<ProductRepository>();
+            builder.Services.AddSingleton<ProductListPageModel>();
+            builder.Services.AddSingleton<ManufacturerRepository>();
+            builder.Services.AddSingleton<ManufacturerListPageModel>();
+
             builder.Services.AddSingleton<ProjectRepository>();
             builder.Services.AddSingleton<TaskRepository>();
             builder.Services.AddSingleton<CategoryRepository>();
             builder.Services.AddSingleton<TagRepository>();
             builder.Services.AddSingleton<SeedDataService>();
             builder.Services.AddSingleton<ModalErrorHandler>();
-            builder.Services.AddSingleton<MainPageModel>();
             builder.Services.AddSingleton<ProjectListPageModel>();
             builder.Services.AddSingleton<ManageMetaPageModel>();
 

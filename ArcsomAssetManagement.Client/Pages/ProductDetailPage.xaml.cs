@@ -1,0 +1,9 @@
+namespace ArcsomAssetManagement.Client.Pages;
+
+public partial class ProductDetailPage : ContentPage
+{
+	public ProductDetailPage()
+	{
+		InitializeComponent();
+	}
+}

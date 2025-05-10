@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pageModels="clr-namespace:ArcsomAssetManagement.Client.PageModels"
+             xmlns:models="clr-namespace:ArcsomAssetManagement.Client.Models"
+             xmlns:controls="clr-namespace:ArcsomAssetManagement.Client.Pages.Controls"
+             xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
+             x:Class="ArcsomAssetManagement.Client.Pages.ManufacturerListPage"
+             x:DataType="pageModels:ManufacturerListPageModel"
+             Title="Manufacturers">
+
+    <ContentPage.Behaviors>
+        <toolkit:EventToCommandBehavior
+                EventName="Appearing"                
+                Command="{Binding AppearingCommand}" />
+    </ContentPage.Behaviors>
+
+    <StackLayout Padding="20">
+        <CollectionView ItemsSource="{Binding Manufacturers}">
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <StackLayout>
+                        <Label Text="{Binding Name}" FontSize="18"/>
+                        <Label Text="{Binding Price}" FontSize="14"/>
+                    </StackLayout>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+    </StackLayout>
+</ContentPage>
+
+    

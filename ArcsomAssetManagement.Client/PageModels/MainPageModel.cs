@@ -35,18 +35,19 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
     [RelayCommand]
     public async Task Test()
     {
-
-        await AppShell.DisplayToastAsync("test successful!");
+        await Shell.Current.GoToAsync("//projects");
+        //await AppShell.DisplaySnackbarAsync("test successful!"); TODO: for android use toast
     }
 
+    //[RelayCommand]
+    //public async Task LoginAsync()
+    //{
+    //    await AppShell.DisplaySnackbarAsync("Login successful!");
+    //}
     [RelayCommand]
     public async Task LoginAsync()
     {
-        await AppShell.DisplayToastAsync("Login successful!");
-    }
-    public async Task LoginAsync()
-    {
-        //if (IsBusy) return;
+        if (IsBusy) return;
 
         try
         {
@@ -61,27 +62,31 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
             var json = JsonConvert.SerializeObject(loginDto);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
 
-            var response = await _httpClient.PostAsync("https://yourapiurl.com/api/auth/login", content);
+            // TODO: var response = await _httpClient.PostAsync("https://yourapiurl.com/api/auth/login", content);
 
-            if (response.IsSuccessStatusCode)
-            {
-                var result = await response.Content.ReadAsStringAsync();
-                var token = JsonConvert.DeserializeObject<TokenResponse>(result).Token;
+            //if (response.IsSuccessStatusCode)
+            //{
+            //    var result = await response.Content.ReadAsStringAsync();
+            //    var token = JsonConvert.DeserializeObject<TokenResponse>(result).Token;
 
-                await SecureStorage.SetAsync("auth_token", token);
+            //    await SecureStorage.SetAsync("auth_token", token);
 
-                await AppShell.DisplayToastAsync("Login successful!");
+            //    await AppShell.DisplayToastAsync("Login successful!");
 
-                // TODO: await Shell.Current.GoToAsync("//home");
-            }
-            else
-            {
-                await AppShell.DisplaySnackbarAsync("Login failed. Please check your credentials.");
-            }
+            //    await Shell.Current.GoToAsync("//home");
+            //}
+            //else
+            //{
+            //    await AppShell.DisplaySnackbarAsync("Login failed. Please check your credentials.");
+            //}
+            // TODO: Remove
+
+            await Shell.Current.GoToAsync("//projects");
         }
         catch (Exception ex)
         {
-            await AppShell.DisplaySnackbarAsync($"An error occurred: {ex.Message}");
+            await AppShell.Current.DisplayAlert("Notification", $"An error occurred: {ex.Message}", "OK");
+            //await AppShell.DisplaySnackbarAsync($"An error occurred: {ex.Message}");
         }
         finally
         {
@@ -225,9 +230,9 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
     //        return _taskRepository.SaveItemAsync(task);
     //    }
 
-    //    [RelayCommand]
-    //    private Task AddTask()
-    //        => Shell.Current.GoToAsync($"task");
+    [RelayCommand]
+    private Task AddTask()
+        => Shell.Current.GoToAsync($"task");
 
     //    [RelayCommand]
     //    private Task NavigateToProject(Project project)

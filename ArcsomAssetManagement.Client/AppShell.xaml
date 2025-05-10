@@ -13,13 +13,25 @@
         Icon="{StaticResource IconDashboard}"
         ContentTemplate="{DataTemplate pages:MainPage}"
         Route="main" />
-<!--
+
+    <ShellContent
+        Title="Products"
+        Icon="{StaticResource IconProducts}"
+        ContentTemplate="{DataTemplate pages:ProductListPage}"
+        Route="products" />
+
+    <ShellContent
+        Title="Manufacturers"
+        Icon="{StaticResource IconManufacturers}"
+        ContentTemplate="{DataTemplate pages:ManufacturerListPage}"
+        Route="manufacturers" />
+
     <ShellContent
         Title="Projects"
         Icon="{StaticResource IconProjects}"
         ContentTemplate="{DataTemplate pages:ProjectListPage}"
         Route="projects" />
-
+    <!--
     <ShellContent
         Title="Manage Meta"
         Icon="{StaticResource IconMeta}"
