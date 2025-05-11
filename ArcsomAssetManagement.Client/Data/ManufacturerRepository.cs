@@ -1,6 +1,7 @@
 ﻿using ArcsomAssetManagement.Client.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
+using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.Data;
 
@@ -51,7 +52,7 @@ public class ManufacturerRepository
     /// Retrieves a list of all manufacturers from the database.
     /// </summary>
     /// <returns>A list of <see cref="Manufacturer"/> objects.</returns>
-    public async Task<List<Manufacturer>> ListAsync()
+    public async Task<ObservableCollection<Manufacturer>> ListAsync()
     {
         await Init();
         await using var connection = new SqliteConnection(Constants.DatabasePath);
@@ -59,7 +60,7 @@ public class ManufacturerRepository
 
         var selectCmd = connection.CreateCommand();
         selectCmd.CommandText = "SELECT * FROM Manufacturer";
-        var manufacturers = new List<Manufacturer>();
+        var manufacturers = new ObservableCollection<Manufacturer>();
 
         await using var reader = await selectCmd.ExecuteReaderAsync();
         while (await reader.ReadAsync())

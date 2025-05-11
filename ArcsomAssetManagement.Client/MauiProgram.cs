@@ -35,6 +35,8 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddSingleton<ManufacturerRepository>();
             builder.Services.AddSingleton<ManufacturerListPageModel>();
 
+            builder.Services.AddTransientWithShellRoute<ManufacturerDetailPage, ManufacturerDetailPageModel>("manufacturer");
+
             builder.Services.AddSingleton<ProjectRepository>();
             builder.Services.AddSingleton<TaskRepository>();
             builder.Services.AddSingleton<CategoryRepository>();

@@ -15,18 +15,34 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
 
-    <StackLayout Padding="20">
-        <CollectionView ItemsSource="{Binding Manufacturers}">
+    <VerticalStackLayout Padding="10">
+        <SearchBar Placeholder="Search manufacturers..."
+                   Text="{Binding SearchText}"
+                   TextChanged="SearchBar_TextChanged" />
+
+        <Button Text="Search" 
+            Command="{Binding FilterManufacturersCommand}"/>
+
+        <CollectionView ItemsSource="{Binding FilteredManufacturers}">
             <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <StackLayout>
-                        <Label Text="{Binding Name}" FontSize="18"/>
-                        <Label Text="{Binding Price}" FontSize="14"/>
-                    </StackLayout>
+                <DataTemplate x:DataType="models:Manufacturer">
+                    <Border>
+                        <StackLayout Padding="10">
+                            <Label Text="{Binding Name}" FontSize="18" />
+                            <Label Text="{Binding Contact}" FontSize="14" TextColor="Gray" />
+                        </StackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NavigateToManufacturerCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerListPageModel}}, x:DataType=pageModels:ManufacturerListPageModel}" CommandParameter="{Binding .}"/>
+                        </Border.GestureRecognizers>
+                    </Border>
                 </DataTemplate>
             </CollectionView.ItemTemplate>
         </CollectionView>
-    </StackLayout>
+        
+        <controls:AddButton 
+            Command="{Binding AddManufacturerCommand}" />
+    </VerticalStackLayout>
+
 </ContentPage>
 
     

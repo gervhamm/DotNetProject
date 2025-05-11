@@ -15,18 +15,23 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
 
-    <StackLayout Padding="20">
-        <CollectionView ItemsSource="{Binding Products}">
-            <CollectionView.ItemTemplate>
-                <DataTemplate>
-                    <StackLayout>
-                        <Label Text="{Binding Name}" FontSize="18"/>
-                        <Label Text="{Binding Price}" FontSize="14"/>
-                    </StackLayout>
+    <Grid>
+        <VerticalStackLayout 
+        BindableLayout.ItemsSource="{Binding Products}" 
+        Margin="{StaticResource LayoutPadding}" 
+        Spacing="{StaticResource LayoutSpacing}">
+            <BindableLayout.ItemTemplate>
+                <DataTemplate x:DataType="models:Product">
+                    <Border>
+                        <VerticalStackLayout Padding="10">
+                            <Label Text="{Binding Name}" FontSize="24" />
+                        </VerticalStackLayout>
+                    </Border>
                 </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-    </StackLayout>
+            </BindableLayout.ItemTemplate>
+        </VerticalStackLayout>
+
+    </Grid>
 </ContentPage>
 
     

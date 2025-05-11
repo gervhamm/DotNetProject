@@ -9,4 +9,5 @@ public class Manufacturer
     public string Name { get; set; } = null!;
     public string? Contact { get; set; }
     public ICollection<Product>? Products { get; set; }
+    public override string ToString() => $"{Name}";
 }

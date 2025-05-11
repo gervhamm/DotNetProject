@@ -1,6 +1,7 @@
 ﻿using ArcsomAssetManagement.Client.Models;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
+using SQLite;
 
 namespace ArcsomAssetManagement.Client.Data;
 
@@ -9,10 +10,14 @@ namespace ArcsomAssetManagement.Client.Data;
 /// </summary>
 public class ProductRepository
 {
+    //TODO: replace code with the _database and linq queries
+    private readonly SQLiteAsyncConnection _database;
+
     private bool _hasBeenInitialized = false;
     private readonly ILogger _logger;
     public ProductRepository(ILogger<ProductRepository> logger)
     {
+        _database = new SQLiteAsyncConnection(Constants.DatabasePath);
         _logger = logger;
     }
 
@@ -54,6 +59,43 @@ public class ProductRepository
     /// <returns>A list of <see cref="Product"/> objects.</returns>
     public async Task<List<Product>> ListAsync()
     {
+        await Init();
+        await using var connection = new SqliteConnection(Constants.DatabasePath);
+        await connection.OpenAsync();
+
+        var selectCmd = connection.CreateCommand();
+        selectCmd.CommandText = "SELECT * FROM Product";
+        var products = new List<Product>();
+
+        await using var reader = await selectCmd.ExecuteReaderAsync();
+        while (await reader.ReadAsync())
+        {
+            products.Add(new Product
+            {
+                Id = Convert.ToUInt64(reader.GetInt64(0)),
+                Name = reader.GetString(1)
+            });
+        }
+
+        //foreach (var product in products)
+        //{
+        //    product.Tags = await _tagRepository.ListAsync(product.Id);
+        //    product.Tasks = await _taskRepository.ListAsync(product.Id);
+        //}
+
+        return products;
+    }
+
+    /// <summary>
+    /// Retrieves a list of all products from the database from a certain manufacturer.
+    /// </summary>
+    /// <returns>A list of <see cref="Product"/> objects.</returns>
+    public async Task<List<Product>> ListAsync(ulong manufacturerId)
+    {
+        return await _database.Table<Product>()
+                              .Where(p => p.Manufacturer.Id == manufacturerId)
+                              .ToListAsync();
+
         await Init();
         await using var connection = new SqliteConnection(Constants.DatabasePath);
         await connection.OpenAsync();

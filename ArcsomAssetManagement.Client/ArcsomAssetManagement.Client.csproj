@@ -87,6 +87,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Pages\ManufacturerDetailPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\ManufacturerListPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

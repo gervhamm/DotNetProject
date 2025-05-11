@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             xmlns:pageModels="clr-namespace:ArcsomAssetManagement.Client.PageModels"
+             xmlns:models="clr-namespace:ArcsomAssetManagement.Client.Models"
+             xmlns:pages="clr-namespace:ArcsomAssetManagement.Client.Pages"
+             xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"
+             xmlns:controls="clr-namespace:ArcsomAssetManagement.Client.Pages.Controls"
+             xmlns:fonts="clr-namespace:Fonts"
+             x:Class="ArcsomAssetManagement.Client.Pages.ManufacturerDetailPage"
+             x:DataType="pageModels:ManufacturerDetailPageModel"
+             Title="Manufacturer">
+    <ContentPage.Resources>
+        
+    </ContentPage.Resources>
+    <ContentPage.ToolbarItems>
+        <ToolbarItem
+            Text="Delete"
+            Command="{Binding DeleteCommand}"
+            Order="Primary"
+            Priority="0"
+            IconImageSource="{StaticResource IconDelete}" />        
+    </ContentPage.ToolbarItems>
+
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout Padding="{StaticResource LayoutPadding}" Spacing="{StaticResource LayoutSpacing}">
+                <sf:SfTextInputLayout 
+                    Hint="Name" >
+                    <Entry
+                        Text="{Binding Name}" />
+                </sf:SfTextInputLayout>
+
+                <sf:SfTextInputLayout 
+                    Hint="Contact">
+                    <Entry
+                        Text="{Binding Contact}" />
+                </sf:SfTextInputLayout>
+                <CollectionView ItemsSource="{Binding Products}">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:Product">
+                            <Grid RowDefinitions="Auto,4" RowSpacing="{StaticResource size60}">
+                                <ScrollView>
+                                    <VerticalStackLayout>
+                                        <Label Text="{Binding Name}" FontSize="18" />
+                                    </VerticalStackLayout>
+                                </ScrollView>
+                            </Grid>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+</ContentPage>
