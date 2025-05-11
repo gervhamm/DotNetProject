@@ -92,16 +92,18 @@ public class ProductRepository
     /// <returns>A list of <see cref="Product"/> objects.</returns>
     public async Task<List<Product>> ListAsync(ulong manufacturerId)
     {
-        return await _database.Table<Product>()
-                              .Where(p => p.Manufacturer.Id == manufacturerId)
-                              .ToListAsync();
+        //return await _database.Table<Product>()
+        //                      .Where(p => p.Manufacturer.Id == manufacturerId)
+        //                      .ToListAsync();
 
         await Init();
         await using var connection = new SqliteConnection(Constants.DatabasePath);
         await connection.OpenAsync();
 
         var selectCmd = connection.CreateCommand();
-        selectCmd.CommandText = "SELECT * FROM Product";
+        selectCmd.CommandText = "SELECT * FROM Product WHERE ManufacturerId = @ManufacturerId";
+        selectCmd.Parameters.AddWithValue("@ManufacturerId", manufacturerId);
+
         var products = new List<Product>();
 
         await using var reader = await selectCmd.ExecuteReaderAsync();
