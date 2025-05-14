@@ -15,7 +15,9 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
 
-    <VerticalStackLayout Padding="10">
+    <VerticalStackLayout 
+        Margin="{StaticResource LayoutPadding}" 
+        Spacing="{StaticResource LayoutSpacing}">
         <SearchBar Placeholder="Search manufacturers..."
                    Text="{Binding SearchText}"
                    TextChanged="SearchBar_TextChanged" />
@@ -23,14 +25,17 @@
         <Button Text="Search" 
             Command="{Binding FilterManufacturersCommand}"/>
 
-        <CollectionView ItemsSource="{Binding FilteredManufacturers}">
+        <CollectionView ItemsSource="{Binding FilteredManufacturers}" >
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+            </CollectionView.ItemsLayout>
             <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Manufacturer">
                     <Border>
-                        <StackLayout Padding="10">
+                        <VerticalStackLayout>
                             <Label Text="{Binding Name}" FontSize="18" />
                             <Label Text="{Binding Contact}" FontSize="14" TextColor="Gray" />
-                        </StackLayout>
+                        </VerticalStackLayout>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding NavigateToManufacturerCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerListPageModel}}, x:DataType=pageModels:ManufacturerListPageModel}" CommandParameter="{Binding .}"/>
                         </Border.GestureRecognizers>

@@ -15,23 +15,38 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
 
-    <Grid>
-        <VerticalStackLayout 
-        BindableLayout.ItemsSource="{Binding Products}" 
+    <VerticalStackLayout 
         Margin="{StaticResource LayoutPadding}" 
         Spacing="{StaticResource LayoutSpacing}">
-            <BindableLayout.ItemTemplate>
+        <SearchBar Placeholder="Search products..."
+                   Text="{Binding SearchText}"
+                   TextChanged="SearchBar_TextChanged" />
+
+        <Button Text="Search" 
+            Command="{Binding FilterProductsCommand}"/>
+
+        <CollectionView ItemsSource="{Binding FilteredProducts}" >
+            <CollectionView.ItemsLayout>
+                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
+            </CollectionView.ItemsLayout>
+            <CollectionView.ItemTemplate>
                 <DataTemplate x:DataType="models:Product">
                     <Border>
-                        <VerticalStackLayout Padding="10">
-                            <Label Text="{Binding Name}" FontSize="24" />
+                        <VerticalStackLayout>
+                            <Label Text="{Binding Name}" FontSize="18" />
+                            <Label Text="{Binding Contact}" FontSize="14" TextColor="Gray" />
                         </VerticalStackLayout>
+                        <Border.GestureRecognizers>
+                            <TapGestureRecognizer Command="{Binding NavigateToProductCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProductListPageModel}}, x:DataType=pageModels:ProductListPageModel}" CommandParameter="{Binding .}"/>
+                        </Border.GestureRecognizers>
                     </Border>
                 </DataTemplate>
-            </BindableLayout.ItemTemplate>
-        </VerticalStackLayout>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
 
-    </Grid>
+        <controls:AddButton 
+            Command="{Binding AddProductCommand}" />
+    </VerticalStackLayout>
 </ContentPage>
 
     

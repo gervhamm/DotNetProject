@@ -1,7 +1,9 @@
 ﻿using ArcsomAssetManagement.Client.Models;
+using CommunityToolkit.Maui.Core.Extensions;
 using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using SQLite;
+using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.Data;
 
@@ -57,7 +59,7 @@ public class ProductRepository
     /// Retrieves a list of all products from the database.
     /// </summary>
     /// <returns>A list of <see cref="Product"/> objects.</returns>
-    public async Task<List<Product>> ListAsync()
+    public async Task<ObservableCollection<Product>> ListAsync()
     {
         await Init();
         await using var connection = new SqliteConnection(Constants.DatabasePath);
@@ -83,7 +85,7 @@ public class ProductRepository
         //    product.Tasks = await _taskRepository.ListAsync(product.Id);
         //}
 
-        return products;
+        return products.ToObservableCollection();
     }
 
     /// <summary>

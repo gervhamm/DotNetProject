@@ -93,7 +93,52 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
         Products = new ObservableCollection<Product>( await _productRepository.ListAsync(_manufacturer.Id));
         _manufacturer.Products = Products;
     }
+    [RelayCommand]
+    private async Task Save()
+    {
+        if (_manufacturer is null)
+        {
+            _errorHandler.HandleError(
+                new Exception("Manufacturer is null. Cannot Save."));
 
+            return;
+        }
+
+        _manufacturer.Name = Name;
+        _manufacturer.Contact = Contact;
+        await _manufacturerRepository.SaveItemAsync(_manufacturer);
+
+        if (_manufacturer.IsNullOrNew())
+        {
+            foreach (var product in Products)
+            {
+                product.Manufacturer = _manufacturer;
+                await _productRepository.SaveItemAsync(product);
+            }
+        }
+
+        await Shell.Current.GoToAsync("..");
+        // TODO: await AppShell.DisplayToastAsync("Manufacturer saved");
+    }
+
+    [RelayCommand]
+    private async Task AddProduct()
+    {
+        if (_manufacturer is null)
+        {
+            _errorHandler.HandleError(
+                new Exception("Manufacturer is null. Cannot navigate to product."));
+
+            return;
+        }
+
+        // Pass the manufacturer so if this is a new manufacturer we can just add
+        // the products to the manufacturer and then save them all from here.
+        await Shell.Current.GoToAsync($"product",
+            new ShellNavigationQueryParameters(){
+                {ProductDetailPageModel.ManufacturerQueryKey, _manufacturer}
+            });
+    }
     [RelayCommand]
     private async Task Delete()
     {

@@ -113,7 +113,7 @@
                                         </VisualState>
                                     </VisualStateGroup>
                                 </VisualStateManager.VisualStateGroups>
-                                
+
                                 <Label 
                                     Text="{Binding .}" 
                                     x:Name="IconImage"
@@ -123,14 +123,14 @@
                                     HorizontalOptions="Center"
                                     TextColor="{AppThemeBinding Light={StaticResource DarkOnLightBackground},Dark={StaticResource LightOnDarkBackground}}"/>
                                 <BoxView x:Name="SelectedIndicator" Color="{StaticResource Primary}" HeightRequest="4" HorizontalOptions="Fill" Grid.Row="1"/>
-                            </Grid>                            
+                            </Grid>
                         </DataTemplate>
                     </CollectionView.ItemTemplate>
                     <CollectionView.ItemsLayout>
                         <LinearItemsLayout Orientation="Horizontal" ItemSpacing="{StaticResource LayoutSpacing}"/>
                     </CollectionView.ItemsLayout>
                 </CollectionView>
-                
+
 
                 <Label 
                     Text="Tags" 
@@ -175,8 +175,6 @@
                 </VerticalStackLayout>
             </VerticalStackLayout>
         </ScrollView>
-
-        <controls:AddButton Command="{Binding AddTaskCommand}" />
     </Grid>
     
 </ContentPage>
