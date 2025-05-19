@@ -51,13 +51,13 @@
                      Spacing="{StaticResource LayoutSpacing}"
                      BindableLayout.ItemsSource="{Binding Products}">
                     <BindableLayout.ItemTemplate>
-                        <DataTemplate x:DataType="models:Manufacturer">
+                        <DataTemplate x:DataType="models:Product">
                             <Border>
                                 <VerticalStackLayout>
                                     <Label Text="{Binding Name}" FontSize="18" />
                                 </VerticalStackLayout>
                                 <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding NavigateToProductCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProductListPageModel}}, x:DataType=pageModels:ProductListPageModel}" CommandParameter="{Binding .}"/>
+                                    <TapGestureRecognizer Command="{Binding NavigateToProductCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerDetailPageModel}}, x:DataType=pageModels:ManufacturerDetailPageModel}" CommandParameter="{Binding .}"/>
                                 </Border.GestureRecognizers>
                             </Border>
                         </DataTemplate>

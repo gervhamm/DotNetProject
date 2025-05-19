@@ -34,7 +34,7 @@
                     <Border>
                         <VerticalStackLayout>
                             <Label Text="{Binding Name}" FontSize="18" />
-                            <Label Text="{Binding Contact}" FontSize="14" TextColor="Gray" />
+                            <Label Text="{Binding Manufacturer.Name}" FontSize="14" TextColor="Gray" />
                         </VerticalStackLayout>
                         <Border.GestureRecognizers>
                             <TapGestureRecognizer Command="{Binding NavigateToProductCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProductListPageModel}}, x:DataType=pageModels:ProductListPageModel}" CommandParameter="{Binding .}"/>

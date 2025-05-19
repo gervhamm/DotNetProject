@@ -45,7 +45,7 @@ public partial class ManufacturerListPageModel : ObservableObject
     {
         if (string.IsNullOrWhiteSpace(SearchText))
         {
-            filteredManufacturers = await _manufacturerRepository.ListAsync();
+            FilteredManufacturers = await _manufacturerRepository.ListAsync();
         }
         else
         {

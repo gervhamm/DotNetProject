@@ -7,7 +7,10 @@ namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ProductListPageModel : ObservableObject
 {
-    private readonly ProductRepository _productRepository;
+    private readonly ProductRepository2 _productRepository;
+    private readonly ManufacturerRepository _manufacturerRepository;
+    
+    private ObservableCollection<Manufacturer> _manufacturers = [];
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -18,15 +21,23 @@ public partial class ProductListPageModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Product> _products = [];
 
-    public ProductListPageModel(ProductRepository productRepository)
+    public ProductListPageModel(ProductRepository2 productRepository, ManufacturerRepository manufacturerRepository)
     {
         _productRepository = productRepository;
+        _manufacturerRepository = manufacturerRepository;
     }
 
     [RelayCommand]
     private async Task Appearing()
     {
         Products = await _productRepository.ListAsync();
+        _manufacturers = await _manufacturerRepository.ListAsync();
+
+        foreach (var product in Products)
+        {
+            product.Manufacturer = _manufacturers.FirstOrDefault(m => m.Id == product.ManufacturerId);
+        }
+
         FilteredProducts = Products;
     }
 
@@ -42,17 +53,17 @@ public partial class ProductListPageModel : ObservableObject
     [RelayCommand]
     private async Task FilterProducts()
     {
-        //if (string.IsNullOrWhiteSpace(SearchText))
-        //{
-        //    filteredProducts = await _productRepository.ListAsync();
-        //}
-        //else
-        //{
-        //    var filtered = Products
-        //        .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-        //                    (p.Contact?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false))
-        //        .ToList();
-        //    FilteredProducts = new ObservableCollection<Product>(filtered);
-        //}
+        if (string.IsNullOrWhiteSpace(SearchText))
+        {
+            await Appearing();
+        }
+        else
+        {
+            var filtered = Products
+                .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
+                            (p.Manufacturer?.Name?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false))
+                .ToList();
+            FilteredProducts = new ObservableCollection<Product>(filtered);
+        }
     }
 }

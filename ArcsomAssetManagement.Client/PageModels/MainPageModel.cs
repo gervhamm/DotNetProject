@@ -11,8 +11,9 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
     private readonly HttpClient _httpClient;
 
 
-    public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
-        TaskRepository taskRepository, CategoryRepository categoryRepository, ModalErrorHandler errorHandler)
+    //public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
+    //    TaskRepository taskRepository, CategoryRepository categoryRepository, ModalErrorHandler errorHandler)
+    public MainPageModel(ModalErrorHandler errorHandler)
     {
         _httpClient = new HttpClient();
 

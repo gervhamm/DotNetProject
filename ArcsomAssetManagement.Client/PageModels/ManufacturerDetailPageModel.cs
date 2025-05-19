@@ -10,7 +10,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 {
     private Manufacturer? _manufacturer;
     private ManufacturerRepository _manufacturerRepository;
-    private ProductRepository _productRepository;
+    private ProductRepository2 _productRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -25,7 +25,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
     [ObservableProperty]
     bool _isBusy;
-    public ManufacturerDetailPageModel(ManufacturerRepository manufacturerRepository, ProductRepository productRepository, ModalErrorHandler errorHandler)
+    public ManufacturerDetailPageModel(ManufacturerRepository manufacturerRepository, ProductRepository2 productRepository, ModalErrorHandler errorHandler)
     {
         _manufacturerRepository = manufacturerRepository;
         _productRepository = productRepository;
@@ -152,4 +152,8 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
         await Shell.Current.GoToAsync("..");
         //TODO: await AppShell.DisplayToastAsync("Manufacturer deleted");
     }
+
+    [RelayCommand]
+    Task NavigateToProduct(Product product)
+        => Shell.Current.GoToAsync($"product?id={product.Id}");
 }

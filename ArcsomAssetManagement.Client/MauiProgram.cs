@@ -30,7 +30,8 @@ namespace ArcsomAssetManagement.Client
 #endif
 
             builder.Services.AddSingleton<MainPageModel>();
-            builder.Services.AddSingleton<ProductRepository>();
+            //builder.Services.AddSingleton<ProductRepository>();
+            builder.Services.AddSingleton<ProductRepository2>();
             builder.Services.AddSingleton<ProductListPageModel>();
             builder.Services.AddSingleton<ManufacturerRepository>();
             builder.Services.AddSingleton<ManufacturerListPageModel>();
@@ -38,17 +39,17 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddTransientWithShellRoute<ManufacturerDetailPage, ManufacturerDetailPageModel>("manufacturer");
             builder.Services.AddTransientWithShellRoute<ProductDetailPage, ProductDetailPageModel>("product");
 
-            builder.Services.AddSingleton<ProjectRepository>();
-            builder.Services.AddSingleton<TaskRepository>();
-            builder.Services.AddSingleton<CategoryRepository>();
-            builder.Services.AddSingleton<TagRepository>();
-            builder.Services.AddSingleton<SeedDataService>();
+            //builder.Services.AddSingleton<ProjectRepository>();
+            //builder.Services.AddSingleton<TaskRepository>();
+            //builder.Services.AddSingleton<CategoryRepository>();
+            //builder.Services.AddSingleton<TagRepository>();
+            //builder.Services.AddSingleton<SeedDataService>();
             builder.Services.AddSingleton<ModalErrorHandler>();
-            builder.Services.AddSingleton<ProjectListPageModel>();
-            builder.Services.AddSingleton<ManageMetaPageModel>();
+            //builder.Services.AddSingleton<ProjectListPageModel>();
+            //builder.Services.AddSingleton<ManageMetaPageModel>();
 
-            builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
-            builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");
+            //builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
+            //builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");
 
             return builder.Build();
         }

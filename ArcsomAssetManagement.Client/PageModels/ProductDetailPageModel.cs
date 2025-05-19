@@ -1,7 +1,9 @@
 ﻿using ArcsomAssetManagement.Client.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System;
 using System.Collections.ObjectModel;
+using System.Threading.Tasks;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
@@ -9,23 +11,36 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
 {
     public const string ManufacturerQueryKey = "manufacturer";
 
-    private Product? _product;
-    private ProductRepository _productRepository;
+    private ProductRepository2 _productRepository;
+    private ManufacturerRepository _manufacturerRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
+
     [ObservableProperty]
-    private string _name = string.Empty;
+    private Product? _product = new Product();
+
+    [ObservableProperty]
+    private ObservableCollection<Manufacturer> _manufacturers = [];
+
+    [ObservableProperty]
+    private Manufacturer? _selectedManufacturer;
+
+    [ObservableProperty]
+    private int _selectedManufacturerIndex;
+
+    [ObservableProperty]
+    private bool _isSaveEnabled;
 
     [ObservableProperty]
     private string _manufacturerName = string.Empty;
 
     [ObservableProperty]
     bool _isBusy;
-    public ProductDetailPageModel(ProductRepository productRepository, ModalErrorHandler errorHandler)
+    public ProductDetailPageModel(ProductRepository2 productRepository, ManufacturerRepository manufacturerRepository, ModalErrorHandler errorHandler)
     {
         _productRepository = productRepository;
-
+        _manufacturerRepository = manufacturerRepository;
         _errorHandler = errorHandler;
     }
 
@@ -36,16 +51,22 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
         {
             IsBusy = true;
 
-            _product = await _productRepository.GetAsync(id);
+            Product = await _productRepository.GetAsync(id);    
 
-            if (_product.IsNullOrNew())
+            if (Product.IsNullOrNew())
             {
                 _errorHandler.HandleError(new Exception($"Product with id {id} could not be found."));
                 return;
             }
+            Manufacturers = await _manufacturerRepository.ListAsync(); 
+            Manufacturers.Insert(0, new Manufacturer { Id = 0, Name = "Unknown Manufacturer" });
+            SelectedManufacturer = Product.Manufacturer;
+            if (SelectedManufacturer != null)
+            {
+                SelectedManufacturerIndex = Manufacturers.ToList().FindIndex(m => string.Equals(m.Name, SelectedManufacturer.Name, StringComparison.OrdinalIgnoreCase));
+                ManufacturerName = SelectedManufacturer.Name;
+            }
 
-            Name = _product.Name;
-            ManufacturerName = _product.Manufacturer.Name ?? "Unknown";
         }
         catch (Exception e)
         {
@@ -56,6 +77,9 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
             IsBusy = false;
         }
     }
+
+    private async Task LoadManufacturers() =>
+        Manufacturers = await _manufacturerRepository.ListAsync();
 
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
@@ -70,12 +94,13 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
         }
         else
         {
+            Task.WhenAll(LoadManufacturers()).FireAndForgetSafeAsync(_errorHandler);
             _product = new();
         }
     }
     private async Task RefreshData()
     {
-        if (_product.IsNullOrNew())
+        if (Product.IsNullOrNew())
         {
             return;
         }
@@ -83,21 +108,16 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     [RelayCommand]
     private async Task Save()
     {
-        if (_product is null)
+        if (string.IsNullOrWhiteSpace(Product.Name) || SelectedManufacturer == null)
         {
             _errorHandler.HandleError(
-                new Exception("Product is null. Cannot Save."));
+                new Exception("Please fill in all fields. Cannot Save."));
 
             return;
         }
 
-        _product.Name = Name;
-        _product.Manufacturer = new Manufacturer
-        {
-            Name = "TODO",
-            Contact= "TODO"
-        };
-        await _productRepository.SaveItemAsync(_product);
+        Product.Manufacturer = SelectedManufacturer;
+        await _productRepository.SaveItemAsync(Product);
 
         await Shell.Current.GoToAsync("..");
         // TODO: await AppShell.DisplayToastAsync("Product saved");
@@ -106,13 +126,13 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     [RelayCommand]
     private async Task Delete()
     {
-        if (_product.IsNullOrNew())
+        if (Product.IsNullOrNew())
         {
             await Shell.Current.GoToAsync("..");
             return;
         }
 
-        await _productRepository.DeleteItemAsync(_product);
+        await _productRepository.DeleteItemAsync(Product);
         await Shell.Current.GoToAsync("..");
         //TODO: await AppShell.DisplayToastAsync("Product deleted");
     }
