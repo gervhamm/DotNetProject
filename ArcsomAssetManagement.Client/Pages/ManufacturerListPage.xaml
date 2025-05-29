@@ -14,6 +14,10 @@
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
+    
+    <ContentPage.ToolbarItems>
+        <ToolbarItem Text="Sync" Command="{Binding SyncManufacturersCommand}" />
+    </ContentPage.ToolbarItems>
 
     <VerticalStackLayout 
         Margin="{StaticResource LayoutPadding}" 

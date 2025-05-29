@@ -3,7 +3,7 @@ using SQLiteNetExtensions.Attributes;
 
 namespace ArcsomAssetManagement.Client.Models;
 
-public class Product
+public class Product : IIdentifiable
 {
     [PrimaryKey, AutoIncrement]
     public ulong Id { get; set; }

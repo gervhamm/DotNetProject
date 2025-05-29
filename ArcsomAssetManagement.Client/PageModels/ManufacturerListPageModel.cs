@@ -7,21 +7,23 @@ namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ManufacturerListPageModel : ObservableObject
 {
-    private readonly ManufacturerRepository _manufacturerRepository;
+    private readonly IRepository<Manufacturer> _manufacturerRepository;
+    private readonly SyncService<Manufacturer> _syncService;
 
     [ObservableProperty]
     private string searchText = string.Empty;
 
     [ObservableProperty]
-    private ObservableCollection<Manufacturer> filteredManufacturers;
+    private List<Manufacturer> filteredManufacturers;
     public ObservableCollection<Manufacturer> AllManufacturers { get; set; }
 
     [ObservableProperty]
-    private ObservableCollection<Manufacturer> _manufacturers = [];
+    private List<Manufacturer> _manufacturers = [];
 
-    public ManufacturerListPageModel(ManufacturerRepository manufacturerRepository)
+    public ManufacturerListPageModel(IRepository<Manufacturer> manufacturerRepository, SyncService<Manufacturer> syncService)
     {
         _manufacturerRepository = manufacturerRepository;
+        _syncService = syncService;
     }
 
     [RelayCommand]
@@ -53,7 +55,13 @@ public partial class ManufacturerListPageModel : ObservableObject
                 .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
                             (p.Contact?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false))
                 .ToList();
-            FilteredManufacturers = new ObservableCollection<Manufacturer>(filtered);
+            FilteredManufacturers = new List<Manufacturer>(filtered);
         }
+    }
+    [RelayCommand]
+    private async Task SyncManufacturers()
+    {
+        await _syncService.ProcessSyncQueueAsync();
+        await Appearing();
     }
 }

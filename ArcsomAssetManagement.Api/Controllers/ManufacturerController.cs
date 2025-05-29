@@ -61,11 +61,22 @@ public class ManufacturerController : ControllerBase
             Contact = request.Contact,
             Products = request.Products
         };
-
-        await _context.Manufacturers.AddAsync(manufacturer, stoppingToken);
-        await _context.SaveChangesAsync(stoppingToken);
-
-        return Ok(manufacturer);
+        try
+        {
+            await _context.Manufacturers.AddAsync(manufacturer, stoppingToken);
+            await _context.SaveChangesAsync(stoppingToken);
+            return CreatedAtAction(nameof(Get), new { id = manufacturer.Id }, manufacturer);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Error adding manufacturer");
+            return BadRequest("An error occurred while adding the manufacturer.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpPatch("{id}")]

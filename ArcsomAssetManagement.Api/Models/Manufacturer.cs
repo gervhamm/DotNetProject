@@ -1,8 +1,10 @@
 ﻿using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
 namespace ArcsomAssetManagement.Api.Models;
 
+[Index(nameof(Name), IsUnique = true)]
 public class Manufacturer
 {
     public ulong Id { get; set; }

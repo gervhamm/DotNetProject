@@ -9,7 +9,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttributable
 {
     private Manufacturer? _manufacturer;
-    private ManufacturerRepository _manufacturerRepository;
+    private IRepository<Manufacturer> _manufacturerRepository;
     private ProductRepository2 _productRepository;
 
     private readonly ModalErrorHandler _errorHandler;
@@ -25,7 +25,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
     [ObservableProperty]
     bool _isBusy;
-    public ManufacturerDetailPageModel(ManufacturerRepository manufacturerRepository, ProductRepository2 productRepository, ModalErrorHandler errorHandler)
+    public ManufacturerDetailPageModel(IRepository<Manufacturer> manufacturerRepository, ProductRepository2 productRepository, ModalErrorHandler errorHandler)
     {
         _manufacturerRepository = manufacturerRepository;
         _productRepository = productRepository;
@@ -40,7 +40,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
         {
             IsBusy = true;
 
-            _manufacturer = await _manufacturerRepository.GetAsync(id);
+            _manufacturer = await _manufacturerRepository.GetAsync((ulong)id);
 
             if (_manufacturer.IsNullOrNew())
             {
@@ -106,7 +106,16 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
         _manufacturer.Name = Name;
         _manufacturer.Contact = Contact;
-        await _manufacturerRepository.SaveItemAsync(_manufacturer);
+        try
+        {
+            await _manufacturerRepository.SaveItemAsync(_manufacturer);
+        }
+        catch (Exception ex)
+        {
+            // await AppShell.Current.DisplayAlert("Notification", $"An error occurred: {ex.Message}", "OK");
+            _errorHandler.HandleError(ex);
+            return;
+        }
 
         if (_manufacturer.IsNullOrNew())
         {

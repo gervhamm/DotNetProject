@@ -11,8 +11,8 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
 {
     public const string ManufacturerQueryKey = "manufacturer";
 
-    private ProductRepository2 _productRepository;
-    private ManufacturerRepository _manufacturerRepository;
+    private IRepository<Product> _productRepository;
+    private IRepository<Manufacturer> _manufacturerRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -21,7 +21,7 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     private Product? _product = new Product();
 
     [ObservableProperty]
-    private ObservableCollection<Manufacturer> _manufacturers = [];
+    private List<Manufacturer> _manufacturers = [];
 
     [ObservableProperty]
     private Manufacturer? _selectedManufacturer;
@@ -37,7 +37,7 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
 
     [ObservableProperty]
     bool _isBusy;
-    public ProductDetailPageModel(ProductRepository2 productRepository, ManufacturerRepository manufacturerRepository, ModalErrorHandler errorHandler)
+    public ProductDetailPageModel(IRepository<Product> productRepository, IRepository<Manufacturer> manufacturerRepository, ModalErrorHandler errorHandler)
     {
         _productRepository = productRepository;
         _manufacturerRepository = manufacturerRepository;
@@ -45,7 +45,7 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     }
 
     [RelayCommand]
-    private async Task LoadData(int id)
+    private async Task LoadData(ulong id)
     {
         try
         {
@@ -85,7 +85,7 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     {
         if (query.ContainsKey("id"))
         {
-            int id = Convert.ToInt32(query["id"]);
+            ulong id = Convert.ToUInt64(query["id"]);
             LoadData(id).FireAndForgetSafeAsync(_errorHandler);
         }
         else if (query.ContainsKey("refresh"))

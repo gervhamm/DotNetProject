@@ -3,10 +3,11 @@ using SQLiteNetExtensions.Attributes;
 
 namespace ArcsomAssetManagement.Client.Models;
 
-public class Manufacturer
+public class Manufacturer : IIdentifiable
 {
     [PrimaryKey, AutoIncrement]
     public ulong Id { get; set; }
+    [Unique]
     public string Name { get; set; } = null!;
     public string? Contact { get; set; }
 

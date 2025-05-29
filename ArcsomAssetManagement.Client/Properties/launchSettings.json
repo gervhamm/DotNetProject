@@ -4,7 +4,7 @@
       "commandName": "Project",
       "nativeDebugging": false,
       "environmentVariables": {
-        "API_URL": "https://localhost:7034","
+        "API_URL": "https://localhost:7034"
       }
     }
   }

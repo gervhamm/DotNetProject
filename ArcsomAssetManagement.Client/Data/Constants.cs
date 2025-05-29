@@ -2,7 +2,7 @@ namespace ArcsomAssetManagement.Client.Data;
 
 public static class Constants
 {
-    public const string DatabaseFilename = "TodoSQLite.db3";
+    public const string DatabaseFilename = "PatternDecoratorSQLite.db3";
 
     public const SQLite.SQLiteOpenFlags Flags =
         // open the database in read/write mode

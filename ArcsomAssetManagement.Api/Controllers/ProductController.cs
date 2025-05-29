@@ -56,16 +56,26 @@ public class ProductController : ControllerBase
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
+        var manufacturer = await _context.Manufacturers
+            .FirstOrDefaultAsync(m => m.Id == request.Manufacturer.Id, stoppingToken);
+
+        request.Manufacturer = null;
+
+        if (manufacturer is null)
+        {
+            return BadRequest("Manufacturer not found");
+        }
+
         var product = new Product
         {
             Name = request.Name,
-            Manufacturer = request.Manufacturer
+            Manufacturer = manufacturer
         };
 
-        await _context.Products.AddAsync(product, stoppingToken);
-        await _context.SaveChangesAsync(stoppingToken);
+        var resutl = await _context.Products.AddAsync(product, stoppingToken);
+        var resultSave = await _context.SaveChangesAsync(stoppingToken);
 
-        return Ok(product);
+        return Ok(product.Id);
     }
 
     [HttpPatch("{id}")]

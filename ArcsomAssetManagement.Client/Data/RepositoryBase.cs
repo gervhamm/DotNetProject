@@ -10,7 +10,7 @@ public abstract class RepositoryBase<T> where T :  class, new()
     protected readonly ILogger _logger;
     static HttpClient _httpClient;
     protected static string authorizationKey;
-    private static string Url => Environment.GetEnvironmentVariable("API_URL");
+    private static string Url => Environment.GetEnvironmentVariable("API_URL") ?? string.Empty;
 
     protected static bool _hasBeenInitialized = false;
 

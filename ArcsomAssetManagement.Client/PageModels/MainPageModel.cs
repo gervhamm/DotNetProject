@@ -9,6 +9,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel TODO: BaseViewModel met default reauste header with bearer
 {
     private readonly HttpClient _httpClient;
+    private readonly ModalErrorHandler _errorHandler;
 
 
     //public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
@@ -20,7 +21,7 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
         //_projectRepository = projectRepository;
         //_taskRepository = taskRepository;
         //_categoryRepository = categoryRepository;
-        //_errorHandler = errorHandler;
+        _errorHandler = errorHandler;
         //_seedDataService = seedDataService;
     }
 

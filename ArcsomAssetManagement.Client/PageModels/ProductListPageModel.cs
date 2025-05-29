@@ -7,10 +7,10 @@ namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ProductListPageModel : ObservableObject
 {
-    private readonly ProductRepository2 _productRepository;
-    private readonly ManufacturerRepository _manufacturerRepository;
+    private readonly IRepository<Product> _productRepository;
+    private readonly IRepository<Manufacturer> _manufacturerRepository;
     
-    private ObservableCollection<Manufacturer> _manufacturers = [];
+    private List<Manufacturer> _manufacturers = [];
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -21,7 +21,7 @@ public partial class ProductListPageModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Product> _products = [];
 
-    public ProductListPageModel(ProductRepository2 productRepository, ManufacturerRepository manufacturerRepository)
+    public ProductListPageModel(IRepository<Product> productRepository, IRepository<Manufacturer> manufacturerRepository)
     {
         _productRepository = productRepository;
         _manufacturerRepository = manufacturerRepository;
@@ -30,7 +30,8 @@ public partial class ProductListPageModel : ObservableObject
     [RelayCommand]
     private async Task Appearing()
     {
-        Products = await _productRepository.ListAsync();
+        var productList = await _productRepository.ListAsync();
+        Products = new ObservableCollection<Product>(productList);
         _manufacturers = await _manufacturerRepository.ListAsync();
 
         foreach (var product in Products)
