@@ -1,9 +1,9 @@
-﻿using ArcsomAssetManagement.Api.Data;
-using ArcsomAssetManagement.Api.Models;
+﻿using ArcsomAssetManagement.Client.Data;
+using ArcsomAssetManagement.Client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ArcsomAssetManagement.Api.Controllers;
+namespace ArcsomAssetManagement.Client.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]

@@ -1,16 +1,16 @@
 ﻿using ArcsomAssetManagement.Client.Models;
 using Microsoft.Extensions.Logging;
 using SQLite;
-using System.Collections.ObjectModel;
 using System.Text.Json;
 
 namespace ArcsomAssetManagement.Client.Data;
 
-public class ProductOfflineRepository : IOfflineRepository<Product>
+public class ManufacturerOfflineRepository : IOfflineRepository<Manufacturer>
 {
-    private readonly ILogger<ProductOfflineRepository> _logger;
+    private readonly ILogger<ManufacturerOfflineRepository> _logger;
     private SQLiteAsyncConnection? _database;
-    public ProductOfflineRepository(ILogger<ProductOfflineRepository> logger, SQLiteAsyncConnection database)
+
+    public ManufacturerOfflineRepository(ILogger<ManufacturerOfflineRepository> logger, SQLiteAsyncConnection database)
     {
         _logger = logger;
         _database = database;
@@ -23,10 +23,9 @@ public class ProductOfflineRepository : IOfflineRepository<Product>
 
         _database = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);
         await _database.CreateTableAsync<Manufacturer>();
-        await _database.CreateTableAsync<Product>();
 
     }
-    public async Task<int> DeleteItemAsync(Product item)
+    public async Task<int> DeleteItemAsync(Manufacturer item)
     {
         await _database.InsertAsync(new SyncQueueItem
         {
@@ -38,35 +37,27 @@ public class ProductOfflineRepository : IOfflineRepository<Product>
         return await _database.DeleteAsync(item);
     }
 
-    public async Task<Product?> GetAsync(ulong id)
+    public async Task<Manufacturer?> GetAsync(ulong id)
     {
-        return await _database.FindAsync<Product>(id);
+        return await _database.FindAsync<Manufacturer>(id);
     }
 
-    public async Task<List<Product>> ListAsync(ulong manufacturerId)
-    {
-        await Init();
-        return await _database.Table<Product>()
-                              .Where(p => p.ManufacturerId == manufacturerId)
-                              .ToListAsync();
-    }
-
-    public async Task<List<Product>> ListAsync()
+    public async Task<List<Manufacturer>> ListAsync()
     {
         await Init();
 
         try
         {
-            return await _database.Table<Product>().ToListAsync();
+            return await _database.Table<Manufacturer>().ToListAsync();
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing products from database");
-            return new List<Product>();
+            _logger.LogError(ex, "Error listing manufacturers from database");
+            return new List<Manufacturer>();
         }
     }
 
-    public async Task<ulong> SaveItemAsync(Product item, bool trackSync)
+    public async Task<ulong> SaveItemAsync(Manufacturer item, bool trackSync)
     {
         await Init();
 

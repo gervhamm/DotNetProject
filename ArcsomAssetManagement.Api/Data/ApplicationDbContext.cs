@@ -1,7 +1,7 @@
-﻿using ArcsomAssetManagement.Api.Models;
+﻿using ArcsomAssetManagement.Client.Models;
 using Microsoft.EntityFrameworkCore;
 
-namespace ArcsomAssetManagement.Api.Data;
+namespace ArcsomAssetManagement.Client.Data;
 
 public class ApplicationDbContext : DbContext
 {

@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ArcsomAssetManagement.Api.Migrations
+namespace ArcsomAssetManagement.Client.Migrations
 {
     /// <inheritdoc />
     public partial class AddUniqueConstraintToManufacturerName : Migration

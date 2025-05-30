@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
 using SQLite;
 using ArcsomAssetManagement.Client.Models;
+using ArcsomAssetManagement.Client.DTOs.Business;
+using ArcsomAssetManagement.Client.DTOs.Mapping;
+using AutoMapper;
 
 namespace ArcsomAssetManagement.Client
 {
@@ -30,70 +33,77 @@ namespace ArcsomAssetManagement.Client
             builder.Logging.AddDebug();
             builder.Services.AddLogging(configure => configure.AddDebug());
 #endif
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
             builder.Services.AddSingleton<MainPageModel>();
             //builder.Services.AddSingleton<ProductRepository>();
-            builder.Services.AddSingleton<ProductRepository2>();
             builder.Services.AddSingleton<ProductListPageModel>();
             //builder.Services.AddSingleton<ManufacturerRepository>();
             builder.Services.AddSingleton<ManufacturerListPageModel>();
-            builder.Services.AddTransient<SyncService<Manufacturer>>();
-            
-            builder.Services.AddSingleton<ProductOfflineRepository>();
+            builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
+            {
+                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+                var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
+                var mapper = provider.GetRequiredService<IMapper>();
 
-            builder.Services.AddSingleton<SQLiteAsyncConnection>(provider =>
+                return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
+            });
+
+            builder.Services.AddTransient<SQLiteAsyncConnection>(provider =>
             {
                 return new SQLiteAsyncConnection(Constants.DatabasePath);
             });
 
             builder.Services.AddHttpClient();
 
-            builder.Services.AddSingleton<IOfflineRepository<Manufacturer>>(provider =>
-            {
-                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
-                return new OfflineRepository<Manufacturer>(sqliteConnection);
-            });
-
-            builder.Services.AddSingleton<IOnlineRepository<Manufacturer>>(provider =>
+            builder.Services.AddSingleton(provider =>
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
                 var apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/manufacturer" ?? string.Empty;
 
-                return new OnlineRepository<Manufacturer>(httpClientFactory.CreateClient(), apiUrl);
+                return new ManufacturerOnlineRepository(httpClientFactory.CreateClient(), apiUrl);
+            });
+
+            builder.Services.AddSingleton<ManufacturerOfflineRepository>(provider =>
+            {
+                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+                var logger = provider.GetRequiredService<ILogger<ManufacturerOfflineRepository>>();
+                return new ManufacturerOfflineRepository(logger, sqliteConnection);
             });
 
             builder.Services.AddSingleton<IRepository<Manufacturer>>(provider =>
             {
-                var onlineRepository = provider.GetRequiredService<IOnlineRepository<Manufacturer>>();
-                var offlineRepository = provider.GetRequiredService<IOfflineRepository<Manufacturer>>();
+                var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
+                var offlineRepository = provider.GetRequiredService<ManufacturerOfflineRepository>();
+                var mapper = provider.GetRequiredService<IMapper>();
 
-                return new SyncRepository<Manufacturer>(onlineRepository, offlineRepository);
+                return new SyncRepository<Manufacturer, ManufacturerDto>(onlineRepository, offlineRepository, mapper);
             });
 
-
-            builder.Services.AddSingleton<IOfflineRepository<Product>>(provider =>
-            {
-                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
-                return new OfflineRepository<Product>(sqliteConnection);
-            });
-
-            builder.Services.AddSingleton<IOnlineRepository<Product>>(provider =>
+            builder.Services.AddSingleton(provider =>
             {
                 var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
                 var apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/product" ?? string.Empty;
 
-                return new OnlineRepository<Product>(httpClientFactory.CreateClient(), apiUrl);
+                return new ProductOnlineRepository(httpClientFactory.CreateClient(), apiUrl);
+            });
+
+            builder.Services.AddSingleton<ProductOfflineRepository>(provider =>
+            {
+                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+                var logger = provider.GetRequiredService<ILogger<ProductOfflineRepository>>();
+                return new ProductOfflineRepository(logger, sqliteConnection);
             });
 
             builder.Services.AddSingleton<IRepository<Product>>(provider =>
             {
-                var onlineRepository = provider.GetRequiredService<IOnlineRepository<Product>>();
-                var offlineRepository = provider.GetRequiredService<IOfflineRepository<Product>>();
+                var onlineRepository = provider.GetRequiredService<ProductOnlineRepository>();
+                var offlineRepository = provider.GetRequiredService<ProductOfflineRepository>();
+                var mapper = provider.GetRequiredService<IMapper>();
 
-                return new SyncRepository<Product>(onlineRepository, offlineRepository);
+                return new SyncRepository<Product, ProductDto>(onlineRepository, offlineRepository, mapper);
             });
 
-            //builder.Services.AddTransient<IRepository<Manufacturer>, OfflineRepository<Manufacturer>>();
 
             builder.Services.AddTransientWithShellRoute<ManufacturerDetailPage, ManufacturerDetailPageModel>("manufacturer");
             builder.Services.AddTransientWithShellRoute<ProductDetailPage, ProductDetailPageModel>("product");
@@ -110,7 +120,6 @@ namespace ArcsomAssetManagement.Client
             //builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
             //builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");
 
-            InitializeDatabaseAsync(builder.Services.BuildServiceProvider());
 
             return builder.Build();
 

@@ -2,7 +2,7 @@
 using Microsoft.EntityFrameworkCore;
 using System.ComponentModel.DataAnnotations;
 
-namespace ArcsomAssetManagement.Api.Models;
+namespace ArcsomAssetManagement.Client.Models;
 
 [Index(nameof(Name), IsUnique = true)]
 public class Manufacturer

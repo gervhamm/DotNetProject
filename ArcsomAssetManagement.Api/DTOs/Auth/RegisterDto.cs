@@ -1,4 +1,4 @@
-﻿namespace ArcsomAssetManagement.Api.DTOs.Auth
+﻿namespace ArcsomAssetManagement.Client.DTOs.Auth
 {
     public class RegisterDto
     {

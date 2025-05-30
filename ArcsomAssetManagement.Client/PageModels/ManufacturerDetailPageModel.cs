@@ -10,7 +10,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 {
     private Manufacturer? _manufacturer;
     private IRepository<Manufacturer> _manufacturerRepository;
-    private ProductRepository2 _productRepository;
+    private IProductRepository _productRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -25,7 +25,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
     [ObservableProperty]
     bool _isBusy;
-    public ManufacturerDetailPageModel(IRepository<Manufacturer> manufacturerRepository, ProductRepository2 productRepository, ModalErrorHandler errorHandler)
+    public ManufacturerDetailPageModel(IRepository<Manufacturer> manufacturerRepository, IProductRepository productRepository, ModalErrorHandler errorHandler)
     {
         _manufacturerRepository = manufacturerRepository;
         _productRepository = productRepository;

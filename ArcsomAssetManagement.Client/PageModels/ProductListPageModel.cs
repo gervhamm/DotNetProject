@@ -8,7 +8,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class ProductListPageModel : ObservableObject
 {
     private readonly IRepository<Product> _productRepository;
-    private readonly IRepository<Manufacturer> _manufacturerRepository;
+    private readonly IRepository<Manufacturer> _manufacturerRepository; //TODO bring back
     
     private List<Manufacturer> _manufacturers = [];
 

@@ -1,4 +1,4 @@
-using ArcsomAssetManagement.Api.Data;
+using ArcsomAssetManagement.Client.Data;
 using Microsoft.EntityFrameworkCore;
 
 var builder = WebApplication.CreateBuilder(args);

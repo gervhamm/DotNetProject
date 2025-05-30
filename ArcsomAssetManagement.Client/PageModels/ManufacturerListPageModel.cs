@@ -1,4 +1,5 @@
-﻿using ArcsomAssetManagement.Client.Models;
+﻿using ArcsomAssetManagement.Client.DTOs.Business;
+using ArcsomAssetManagement.Client.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -7,8 +8,8 @@ namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ManufacturerListPageModel : ObservableObject
 {
-    private readonly IRepository<Manufacturer> _manufacturerRepository;
-    private readonly SyncService<Manufacturer> _syncService;
+    private readonly ManufacturerRepositoryTest _manufacturerRepository;
+    private readonly SyncService<Manufacturer,ManufacturerDto> _syncService;
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -20,7 +21,7 @@ public partial class ManufacturerListPageModel : ObservableObject
     [ObservableProperty]
     private List<Manufacturer> _manufacturers = [];
 
-    public ManufacturerListPageModel(IRepository<Manufacturer> manufacturerRepository, SyncService<Manufacturer> syncService)
+    public ManufacturerListPageModel(ManufacturerRepositoryTest manufacturerRepository, SyncService<Manufacturer, ManufacturerDto> syncService)
     {
         _manufacturerRepository = manufacturerRepository;
         _syncService = syncService;

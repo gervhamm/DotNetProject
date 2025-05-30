@@ -1,9 +1,10 @@
-﻿using ArcsomAssetManagement.Api.Data;
-using ArcsomAssetManagement.Api.Models;
+﻿using ArcsomAssetManagement.Client.Data;
+using ArcsomAssetManagement.Client.DTOs.Business;
+using ArcsomAssetManagement.Client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
-namespace ArcsomAssetManagement.Api.Controllers;
+namespace ArcsomAssetManagement.Client.Controllers;
 
 [ApiController]
 [Route("api/[controller]")]
@@ -25,7 +26,21 @@ public class ProductController : ControllerBase
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
-        var products = await _context.Products.AsNoTracking().ToListAsync(stoppingToken);
+        var products = await _context.Products.AsNoTracking()
+            .Include(p => p.Manufacturer)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Manufacturer = new ManufacturerDto
+                {
+                    Id = p.Manufacturer.Id,
+                    Name = p.Manufacturer.Name
+                }
+
+
+            })
+            .ToListAsync(stoppingToken);
         if (products == null)
         {
             return NotFound("Not Found");
@@ -41,6 +56,19 @@ public class ProductController : ControllerBase
         var stoppingToken = source.Token;
 
         var product = await _context.Products.AsNoTracking()
+            .Include(p => p.Manufacturer)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Manufacturer = new ManufacturerDto
+                {
+                    Id = p.Manufacturer.Id,
+                    Name = p.Manufacturer.Name
+                }
+
+
+            })
             .FirstOrDefaultAsync(p => p.Id == id, stoppingToken);
         if (product == null)
         {

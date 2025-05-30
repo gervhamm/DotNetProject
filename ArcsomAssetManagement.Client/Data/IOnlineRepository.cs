@@ -2,7 +2,7 @@
 
 namespace ArcsomAssetManagement.Client.Data;
 
-public interface IOnlineRepository<T> where T : class, IIdentifiable, new()
+public interface IOnlineRepository<T>
 {
     Task<List<T>> ListAsync();
     Task<T?> GetAsync(ulong id);

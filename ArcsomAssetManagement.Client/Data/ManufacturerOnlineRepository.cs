@@ -3,35 +3,36 @@ using System.Net.Http.Json;
 
 namespace ArcsomAssetManagement.Client.Data;
 
-public class ProductOnlineRepository : IOnlineRepository<ProductDto>
+public class ManufacturerOnlineRepository : IOnlineRepository<ManufacturerDto>
 {
     private readonly HttpClient _httpClient;
     private readonly string _apiUrl;
 
-    public ProductOnlineRepository(HttpClient httpClient, string apiUrl)
+    public ManufacturerOnlineRepository(HttpClient httpClient, string apiUrl)
     {
         _httpClient = httpClient;
         _apiUrl = apiUrl;
     }
-    public async Task<int> DeleteItemAsync(ProductDto item)
+    public async Task<int> DeleteItemAsync(ManufacturerDto item)
     {
         var response = await _httpClient.DeleteAsync($"{_apiUrl}/{item.Id}");
         return response.IsSuccessStatusCode ? 1 : 0;
     }
 
-    public async Task<ProductDto?> GetAsync(ulong id)
+    public async Task<ManufacturerDto?> GetAsync(ulong id)
     {
-        return await _httpClient.GetFromJsonAsync<ProductDto>($"{_apiUrl}/{id}");
+        return await _httpClient.GetFromJsonAsync<ManufacturerDto>($"{_apiUrl}/{id}");
     }
 
-    public async Task<List<ProductDto>> ListAsync()
+    public async Task<List<ManufacturerDto>> ListAsync()
     {
-        var response = await _httpClient.GetFromJsonAsync<List<ProductDto>>($"{_apiUrl}");
-        return response ?? new List<ProductDto>();
+        var response = await _httpClient.GetFromJsonAsync<List<ManufacturerDto>>($"{_apiUrl}");
+        return response ?? new List<ManufacturerDto>();
     }
 
     public async Task<bool> PingAsync()
     {
+        // TODO: figure out how to not duplicate the pingAsync for every repository
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
         try
         {
@@ -46,7 +47,7 @@ public class ProductOnlineRepository : IOnlineRepository<ProductDto>
         }
     }
 
-    public async Task<ulong> SaveItemAsync(ProductDto item)
+    public async Task<ulong> SaveItemAsync(ManufacturerDto item)
     {
         try
         {

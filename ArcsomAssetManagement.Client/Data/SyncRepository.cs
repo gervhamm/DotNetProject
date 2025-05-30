@@ -1,20 +1,23 @@
 ﻿using ArcsomAssetManagement.Client.Models;
+using AutoMapper;
 
 namespace ArcsomAssetManagement.Client.Data;
 
-public class SyncRepository<T> : IRepository<T> where T : class, IIdentifiable, new()
+public class SyncRepository<TDomain, TDto> : IRepository<TDomain> where TDomain : class, IIdentifiable, new() where TDto : class, new()
 {
-    private readonly IOnlineRepository<T> _onlineRepository;
-    private readonly IOfflineRepository<T> _offlineRepository;
+    private readonly IOnlineRepository<TDto> _onlineRepository;
+    private readonly IOfflineRepository<TDomain> _offlineRepository;
+    private readonly IMapper _mapper;
 
     private bool _isOnline;
     private DateTime _lastOnlineCheck = DateTime.MinValue;
     private readonly TimeSpan _onlineCheckInterval = TimeSpan.FromSeconds(30);
 
-    public SyncRepository(IOnlineRepository<T> onlineRepository, IOfflineRepository<T> offlineRepository)
+    public SyncRepository(IOnlineRepository<TDto> onlineRepository, IOfflineRepository<TDomain> offlineRepository, IMapper mapper)
     {
         _onlineRepository = onlineRepository ?? throw new ArgumentNullException(nameof(onlineRepository));
         _offlineRepository = offlineRepository ?? throw new ArgumentNullException(nameof(offlineRepository));
+        _mapper = mapper;
     }
 
     private async Task<bool> IsOnlineAsync()
@@ -35,41 +38,60 @@ public class SyncRepository<T> : IRepository<T> where T : class, IIdentifiable, 
         _lastOnlineCheck = DateTime.UtcNow;
         return _isOnline;
     }
-
-    public async Task<List<T>> ListAsync()
+    public async Task<List<TDomain>> ListAsync(ulong id)
     {
         if (await IsOnlineAsync())
         {
-            var data = await _onlineRepository.ListAsync();
-            foreach (var item in data) await _offlineRepository.SaveItemAsync(item, trackSync: false);
-            return data;
+            var dtos = await _onlineRepository.ListAsync();
+            var domainItems = _mapper.Map<List<TDomain>>(dtos);
+            foreach (var item in domainItems) await _offlineRepository.SaveItemAsync(item, trackSync: false);
+            return domainItems;
         }
         return await _offlineRepository.ListAsync();
     }
 
-    public async Task<T?> GetAsync(ulong id)
+    public async Task<List<TDomain>> ListAsync()
     {
         if (await IsOnlineAsync())
         {
-            var item = await _onlineRepository.GetAsync(id);
-            if (item != null) await _offlineRepository.SaveItemAsync(item, trackSync: false);
-            return item;
+            var dtos = await _onlineRepository.ListAsync();
+            var domainItems = _mapper.Map<List<TDomain>>(dtos);
+            foreach (var item in domainItems) await _offlineRepository.SaveItemAsync(item, trackSync: false);
+            return domainItems;
+        }
+        return await _offlineRepository.ListAsync();
+    }
+
+    public async Task<TDomain?> GetAsync(ulong id)
+    {
+        if (await IsOnlineAsync())
+        {
+            var dto = await _onlineRepository.GetAsync(id);
+            var domainItem = _mapper.Map<TDomain>(dto);
+            if (domainItem != null) await _offlineRepository.SaveItemAsync(domainItem, trackSync: false);
+            return domainItem;
         }
         return await _offlineRepository.GetAsync(id);
     }
 
-    public async Task<ulong> SaveItemAsync(T item)
+    public async Task<ulong> SaveItemAsync(TDomain item)
     {
         if (await IsOnlineAsync())
-            return await _onlineRepository.SaveItemAsync(item);
+        {
+            var dto = _mapper.Map<TDto>(item);
+            return await _onlineRepository.SaveItemAsync(dto);
+        }
 
         return await _offlineRepository.SaveItemAsync(item, trackSync: true);
     }
 
-    public async Task<int> DeleteItemAsync(T item)
+    public async Task<int> DeleteItemAsync(TDomain item)
     {
         if (await IsOnlineAsync())
-            return await _onlineRepository.DeleteItemAsync(item);
+        {
+            var dto = _mapper.Map<TDto>(item);
+            return await _onlineRepository.DeleteItemAsync(dto);
+        }
 
         return await _offlineRepository.DeleteItemAsync(item);
     }

@@ -1,7 +1,7 @@
 ﻿using System.ComponentModel.DataAnnotations;
 using System.Resources;
 
-namespace ArcsomAssetManagement.Api.Models;
+namespace ArcsomAssetManagement.Client.Models;
 
 public class Product
 {

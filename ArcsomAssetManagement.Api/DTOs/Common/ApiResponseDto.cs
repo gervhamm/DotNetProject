@@ -1,4 +1,4 @@
-﻿namespace ArcsomAssetManagement.Api.DTOs.Common
+﻿namespace ArcsomAssetManagement.Client.DTOs.Common
 {
     public class ApiResponseDto
     {
