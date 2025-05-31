@@ -40,14 +40,14 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddSingleton<ProductListPageModel>();
             //builder.Services.AddSingleton<ManufacturerRepository>();
             builder.Services.AddSingleton<ManufacturerListPageModel>();
-            builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
-            {
-                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
-                var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
-                var mapper = provider.GetRequiredService<IMapper>();
+            //builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
+            //{
+            //    var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+            //    var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
+            //    var mapper = provider.GetRequiredService<IMapper>();
 
-                return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
-            });
+            //    return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
+            //});
 
             builder.Services.AddTransient<SQLiteAsyncConnection>(provider =>
             {
@@ -55,30 +55,31 @@ namespace ArcsomAssetManagement.Client
             });
 
             builder.Services.AddHttpClient();
+            builder.Services.AddSingleton<ManufacturerRepositoryTest>();
 
-            builder.Services.AddSingleton(provider =>
-            {
-                var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/manufacturer" ?? string.Empty;
+            //builder.Services.AddSingleton(provider =>
+            //{
+            //    var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+            //    var apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/manufacturer" ?? string.Empty;
 
-                return new ManufacturerOnlineRepository(httpClientFactory.CreateClient(), apiUrl);
-            });
+            //    return new ManufacturerOnlineRepository(httpClientFactory.CreateClient(), apiUrl);
+            //});
 
-            builder.Services.AddSingleton<ManufacturerOfflineRepository>(provider =>
-            {
-                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
-                var logger = provider.GetRequiredService<ILogger<ManufacturerOfflineRepository>>();
-                return new ManufacturerOfflineRepository(logger, sqliteConnection);
-            });
+            //builder.Services.AddSingleton<ManufacturerOfflineRepository>(provider =>
+            //{
+            //    var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+            //    var logger = provider.GetRequiredService<ILogger<ManufacturerOfflineRepository>>();
+            //    return new ManufacturerOfflineRepository(logger, sqliteConnection);
+            //});
 
-            builder.Services.AddSingleton<IRepository<Manufacturer>>(provider =>
-            {
-                var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
-                var offlineRepository = provider.GetRequiredService<ManufacturerOfflineRepository>();
-                var mapper = provider.GetRequiredService<IMapper>();
+            //builder.Services.AddSingleton<IRepository<Manufacturer>>(provider =>
+            //{
+            //    var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
+            //    var offlineRepository = provider.GetRequiredService<ManufacturerOfflineRepository>();
+            //    var mapper = provider.GetRequiredService<IMapper>();
 
-                return new SyncRepository<Manufacturer, ManufacturerDto>(onlineRepository, offlineRepository, mapper);
-            });
+            //    return new SyncRepository<Manufacturer, ManufacturerDto>(onlineRepository, offlineRepository, mapper);
+            //});
 
             builder.Services.AddSingleton(provider =>
             {

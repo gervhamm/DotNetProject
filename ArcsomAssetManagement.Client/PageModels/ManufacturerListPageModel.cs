@@ -9,7 +9,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class ManufacturerListPageModel : ObservableObject
 {
     private readonly ManufacturerRepositoryTest _manufacturerRepository;
-    private readonly SyncService<Manufacturer,ManufacturerDto> _syncService;
+    //private readonly SyncService<Manufacturer,ManufacturerDto> _syncService;
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -21,10 +21,10 @@ public partial class ManufacturerListPageModel : ObservableObject
     [ObservableProperty]
     private List<Manufacturer> _manufacturers = [];
 
-    public ManufacturerListPageModel(ManufacturerRepositoryTest manufacturerRepository, SyncService<Manufacturer, ManufacturerDto> syncService)
+    public ManufacturerListPageModel(ManufacturerRepositoryTest manufacturerRepository)//, SyncService<Manufacturer, ManufacturerDto> syncService)
     {
         _manufacturerRepository = manufacturerRepository;
-        _syncService = syncService;
+        //_syncService = syncService;
     }
 
     [RelayCommand]
@@ -62,7 +62,7 @@ public partial class ManufacturerListPageModel : ObservableObject
     [RelayCommand]
     private async Task SyncManufacturers()
     {
-        await _syncService.ProcessSyncQueueAsync();
+        //await _syncService.ProcessSyncQueueAsync();
         await Appearing();
     }
 }

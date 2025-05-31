@@ -1,4 +1,5 @@
 ﻿using ArcsomAssetManagement.Client.Data;
+using ArcsomAssetManagement.Client.DTOs.Business;
 using ArcsomAssetManagement.Client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
@@ -25,7 +26,15 @@ public class ManufacturerController : ControllerBase
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
-        var manufacturers = await _context.Manufacturers.AsNoTracking().ToListAsync(stoppingToken);
+        var manufacturers = await _context.Manufacturers.AsNoTracking()
+            .Select(p => new ManufacturerDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Contact = p.Contact,
+                ProductDtos = null
+            })
+            .ToListAsync(stoppingToken);
         if (manufacturers == null)
         {
             return NotFound("Not Found");
@@ -40,13 +49,37 @@ public class ManufacturerController : ControllerBase
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
-        var manufacturer = await _context.Manufacturers.AsNoTracking()
+        var products = await _context.Products.AsNoTracking()
+            .Include(p => p.Manufacturer)
+            .Where(p => p.Manufacturer.Id == id)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                ManufacturerDto = new ManufacturerDto
+                {
+                    Id = p.Manufacturer.Id,
+                    Name = p.Manufacturer.Name,
+                    Contact = p.Manufacturer.Contact
+                }
+            })
+            .ToListAsync(stoppingToken);
+
+        var manufacturers = await _context.Manufacturers.AsNoTracking()
+            .Select(p => new ManufacturerDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Contact = p.Contact,
+                ProductDtos = products
+            })
             .FirstOrDefaultAsync(p => p.Id == id, stoppingToken);
-        if (manufacturer == null)
+
+        if (manufacturers == null)
         {
             return NotFound("Not Found");
         }
-        return Ok(manufacturer);
+        return Ok(manufacturers);
     }
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] Manufacturer request)

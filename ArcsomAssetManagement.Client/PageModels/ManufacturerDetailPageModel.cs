@@ -9,8 +9,8 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttributable
 {
     private Manufacturer? _manufacturer;
-    private IRepository<Manufacturer> _manufacturerRepository;
-    private IProductRepository _productRepository;
+    private ManufacturerRepositoryTest _manufacturerRepository;
+    //private IProductRepository _productRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -25,10 +25,10 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
     [ObservableProperty]
     bool _isBusy;
-    public ManufacturerDetailPageModel(IRepository<Manufacturer> manufacturerRepository, IProductRepository productRepository, ModalErrorHandler errorHandler)
+    public ManufacturerDetailPageModel(ManufacturerRepositoryTest manufacturerRepository, ModalErrorHandler errorHandler)//IProductRepository productRepository
     {
         _manufacturerRepository = manufacturerRepository;
-        _productRepository = productRepository;
+        //_productRepository = productRepository;
 
         _errorHandler = errorHandler;
     }
@@ -50,7 +50,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
             Name = _manufacturer.Name;
             Contact = _manufacturer.Contact;
-            Products = new ObservableCollection<Product>(await _productRepository.ListAsync(_manufacturer.Id));
+            //Products = new ObservableCollection<Product>(await _productRepository.ListAsync(_manufacturer.Id));
         }
         catch (Exception e)
         {
@@ -90,8 +90,8 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
             return;
         }
 
-        Products = new ObservableCollection<Product>( await _productRepository.ListAsync(_manufacturer.Id));
-        _manufacturer.Products = Products;
+        //Products = new ObservableCollection<Product>( await _productRepository.ListAsync(_manufacturer.Id));
+//_manufacturer.Products = Products;
     }
     [RelayCommand]
     private async Task Save()
@@ -108,7 +108,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
         _manufacturer.Contact = Contact;
         try
         {
-            await _manufacturerRepository.SaveItemAsync(_manufacturer);
+            await _manufacturerRepository.SaveItemAsync(_manufacturer, true);
         }
         catch (Exception ex)
         {
@@ -117,14 +117,14 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
             return;
         }
 
-        if (_manufacturer.IsNullOrNew())
-        {
-            foreach (var product in Products)
-            {
-                product.Manufacturer = _manufacturer;
-                await _productRepository.SaveItemAsync(product);
-            }
-        }
+        //if (_manufacturer.IsNullOrNew())
+        //{
+        //    foreach (var product in Products)
+        //    {
+        //        product.Manufacturer = _manufacturer;
+        //        await _productRepository.SaveItemAsync(product);
+        //    }
+        //}
 
         await Shell.Current.GoToAsync("..");
         // TODO: await AppShell.DisplayToastAsync("Manufacturer saved");

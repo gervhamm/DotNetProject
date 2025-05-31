@@ -32,10 +32,11 @@ public class ProductController : ControllerBase
             {
                 Id = p.Id,
                 Name = p.Name,
-                Manufacturer = new ManufacturerDto
+                ManufacturerDto = new ManufacturerDto
                 {
                     Id = p.Manufacturer.Id,
-                    Name = p.Manufacturer.Name
+                    Name = p.Manufacturer.Name,
+                    Contact = p.Manufacturer.Contact,
                 }
 
 
@@ -61,10 +62,11 @@ public class ProductController : ControllerBase
             {
                 Id = p.Id,
                 Name = p.Name,
-                Manufacturer = new ManufacturerDto
+                ManufacturerDto = new ManufacturerDto
                 {
                     Id = p.Manufacturer.Id,
-                    Name = p.Manufacturer.Name
+                    Name = p.Manufacturer.Name,
+                    Contact = p.Manufacturer.Contact,
                 }
 
 

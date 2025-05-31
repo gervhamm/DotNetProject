@@ -4,5 +4,5 @@ public class ProductDto
 {
     public ulong Id { get; set; }
     public string Name { get; set; }
-    public ManufacturerDto Manufacturer { get; set; }
+    public ManufacturerDto ManufacturerDto { get; set; }
 }

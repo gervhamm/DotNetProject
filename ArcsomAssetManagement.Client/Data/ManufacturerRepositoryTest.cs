@@ -1,21 +1,22 @@
-﻿using ArcsomAssetManagement.Client.Models;
+﻿using ArcsomAssetManagement.Client.DTOs.Business;
+using ArcsomAssetManagement.Client.Models;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SQLite;
-using System.Net.Http;
+using System.Net.Http.Json;
 using System.Text.Json;
 
 namespace ArcsomAssetManagement.Client.Data;
 
 public class ManufacturerRepositoryTest
 {
-    private readonly ILogger<ManufacturerOfflineRepository> _logger;
+    private readonly ILogger<ManufacturerRepositoryTest> _logger;
     private SQLiteAsyncConnection? _database;
     private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
     private readonly string _apiUrl;
 
-    public ManufacturerRepositoryTest(ILogger<ManufacturerOfflineRepository> logger, SQLiteAsyncConnection database, HttpClient httpClient, IMapper mapper)
+    public ManufacturerRepositoryTest(ILogger<ManufacturerRepositoryTest> logger, SQLiteAsyncConnection database, HttpClient httpClient, IMapper mapper)
     {
         _logger = logger;
         _database = database;
@@ -45,8 +46,9 @@ public class ManufacturerRepositoryTest
                 var response = await _httpClient.GetAsync($"{_apiUrl}/{id}");
                 if (response.IsSuccessStatusCode)
                 {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<Manufacturer>(json);
+                    var json = await response.Content.ReadFromJsonAsync<ManufacturerDto>();
+                    var domainItem = _mapper.Map<Manufacturer>(json ?? new ManufacturerDto());
+                    return domainItem;
                 }
             }
             catch (Exception ex)
@@ -67,8 +69,9 @@ public class ManufacturerRepositoryTest
                 var response = await _httpClient.GetAsync(_apiUrl);
                 if (response.IsSuccessStatusCode)
                 {
-                    var json = await response.Content.ReadAsStringAsync();
-                    return JsonSerializer.Deserialize<List<Manufacturer>>(json) ?? new List<Manufacturer>();
+                    var dtos = await response.Content.ReadFromJsonAsync<IEnumerable<ManufacturerDto>>();
+                    var domainItems = _mapper.Map<List<Manufacturer>>(dtos ?? new List<ManufacturerDto>());
+                    return domainItems;
                 }
             }
             catch (Exception ex)
@@ -91,66 +94,67 @@ public class ManufacturerRepositoryTest
 
     public async Task<ulong> SaveItemAsync(Manufacturer item, bool trackSync)
     {
-        return 0;
-        //await Init();
+        if (item.Id == 0)
+        {
+            if (await IsOnlineAsync())
+            {            
+                var response = await _httpClient.PostAsJsonAsync($"{_apiUrl}", item);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (ulong.TryParse(content, out var id))
+                    {
+                        return id;
+                    }
+                }
+                return 0;
+            }
 
-        //if (item.Id == 0)
-        //{
-        //    try
-        //    {
-        //        await _database.InsertAsync(item);
-        //    }
-        //    catch (SQLiteException ex) when (ex.Result == SQLite3.Result.Constraint)
-        //    {
-        //        throw new Exception($"Failed to insert item due to constraint violation: {ex.Message}", ex);
-        //    }
-        //    catch (Exception ex)
-        //    {
-        //        throw new Exception($"Failed to insert item: {ex.Message}", ex);
-        //    }
+            await _database.InsertAsync(item);
 
-        //    if (trackSync)
-        //    {
-        //        await _database.InsertAsync(new SyncQueueItem
-        //        {
-        //            EntityType = item.Name,
-        //            EntityId = item.Id,
-        //            OperationType = OperationType.Create,
-        //            PayloadJson = JsonSerializer.Serialize(item)
-        //        });
-        //    }
-        //}
-        //else
-        //{
-        //    var result = await _database.UpdateAsync(item);
+            if (trackSync)
+            {
+                await _database.InsertAsync(new SyncQueueItem
+                {
+                    EntityType = item.Name,
+                    EntityId = item.Id,
+                    OperationType = OperationType.Create,
+                    PayloadJson = JsonSerializer.Serialize(item)
+                });
+            }
+            return item.Id;
+        }
+        else
+        {
 
-        //    if (result == 0)
-        //    {
-        //        try
-        //        {
-        //            await _database.InsertOrReplaceAsync(item);
-        //        }
-        //        catch (SQLiteException ex) when (ex.Result == SQLite3.Result.Constraint)
-        //        {
-        //            throw new Exception($"Failed to insert or replace item due to constraint violation: {ex.Message}", ex);
-        //        }
-        //        catch (Exception ex)
-        //        {
-        //            throw new Exception($"Failed to insert or replace item: {ex.Message}", ex);
-        //        }
-        //    }
-        //    if (trackSync)
-        //    {
-        //        await _database.InsertAsync(new SyncQueueItem
-        //        {
-        //            EntityType = item.Name,
-        //            EntityId = item.Id,
-        //            OperationType = OperationType.Update,
-        //            PayloadJson = JsonSerializer.Serialize(item)
-        //        });
-        //    }
-        //}
-        //return (ulong)item.GetHashCode();
+            if (await IsOnlineAsync())
+            {
+                var response = await _httpClient.PostAsJsonAsync($"{_apiUrl}", item);
+                if (response.IsSuccessStatusCode)
+                {
+                    var content = await response.Content.ReadAsStringAsync();
+                    if (ulong.TryParse(content, out var id))
+                    {
+                        return id;
+                    }
+                }
+                return 0;
+            }
+            var result = await _database.UpdateAsync(item);
+            if (result == 0) await _database.InsertOrReplaceAsync(item);
+
+            if (trackSync)
+            {
+                await _database.InsertAsync(new SyncQueueItem
+                {
+                    EntityType = item.Name,
+                    EntityId = item.Id,
+                    OperationType = OperationType.Update,
+                    PayloadJson = JsonSerializer.Serialize(item)
+                });
+            }
+            return item.Id;
+        }
     }
     public async Task<int> DeleteItemAsync(Manufacturer item)
     {
