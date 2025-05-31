@@ -7,8 +7,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ProductListPageModel : ObservableObject
 {
-    private readonly IRepository<Product> _productRepository;
-    private readonly IRepository<Manufacturer> _manufacturerRepository; //TODO bring back
+    private readonly ProductRepositoryTest _productRepository;
     
     private List<Manufacturer> _manufacturers = [];
 
@@ -21,10 +20,10 @@ public partial class ProductListPageModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Product> _products = [];
 
-    public ProductListPageModel(IRepository<Product> productRepository, IRepository<Manufacturer> manufacturerRepository)
+    public ProductListPageModel(ProductRepositoryTest productRepository)
     {
         _productRepository = productRepository;
-        _manufacturerRepository = manufacturerRepository;
+        //_manufacturerRepository = manufacturerRepository;
     }
 
     [RelayCommand]
@@ -32,12 +31,6 @@ public partial class ProductListPageModel : ObservableObject
     {
         var productList = await _productRepository.ListAsync();
         Products = new ObservableCollection<Product>(productList);
-        _manufacturers = await _manufacturerRepository.ListAsync();
-
-        foreach (var product in Products)
-        {
-            product.Manufacturer = _manufacturers.FirstOrDefault(m => m.Id == product.ManufacturerId);
-        }
 
         FilteredProducts = Products;
     }

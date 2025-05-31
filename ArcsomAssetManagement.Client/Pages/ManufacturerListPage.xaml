@@ -14,43 +14,45 @@
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
-    
+
     <ContentPage.ToolbarItems>
         <ToolbarItem Text="Sync" Command="{Binding SyncManufacturersCommand}" />
     </ContentPage.ToolbarItems>
-
-    <VerticalStackLayout 
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout 
         Margin="{StaticResource LayoutPadding}" 
         Spacing="{StaticResource LayoutSpacing}">
-        <SearchBar Placeholder="Search manufacturers..."
-                   Text="{Binding SearchText}"
-                   TextChanged="SearchBar_TextChanged" />
+                <SearchBar Placeholder="Search manufacturers..."
+           Text="{Binding SearchText}"
+           TextChanged="SearchBar_TextChanged" />
 
-        <Button Text="Search" 
+                <Button Text="Search" 
             Command="{Binding FilterManufacturersCommand}"/>
-
-        <CollectionView ItemsSource="{Binding FilteredManufacturers}" >
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Manufacturer">
-                    <Border>
-                        <VerticalStackLayout>
-                            <Label Text="{Binding Name}" FontSize="18" />
-                            <Label Text="{Binding Contact}" FontSize="14" TextColor="Gray" />
-                        </VerticalStackLayout>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToManufacturerCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerListPageModel}}, x:DataType=pageModels:ManufacturerListPageModel}" CommandParameter="{Binding .}"/>
-                        </Border.GestureRecognizers>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-        
-        <controls:AddButton 
-            Command="{Binding AddManufacturerCommand}" />
-    </VerticalStackLayout>
+                <VerticalStackLayout 
+                    Spacing="{StaticResource LayoutSpacing}"
+                    BindableLayout.ItemsSource="{Binding FilteredManufacturers}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:Manufacturer">
+                            <Border>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Name}" FontSize="18" />
+                                    <Label Text="{Binding Contact}" FontSize="14" TextColor="Gray" />
+                                </VerticalStackLayout>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding NavigateToManufacturerCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerListPageModel}}, x:DataType=pageModels:ManufacturerListPageModel}" CommandParameter="{Binding .}"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <controls:AddButton 
+    Command="{Binding AddManufacturerCommand}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
+    
+    
 
 </ContentPage>
 

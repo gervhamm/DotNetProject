@@ -8,21 +8,21 @@ using System.Text.Json;
 
 namespace ArcsomAssetManagement.Client.Data;
 
-public class ManufacturerRepositoryTest
+public class ProductRepositoryTest
 {
-    private readonly ILogger<ManufacturerRepositoryTest> _logger;
+    private readonly ILogger<ProductRepositoryTest> _logger;
     private SQLiteAsyncConnection? _database;
     private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
     private readonly string _apiUrl;
 
-    public ManufacturerRepositoryTest(ILogger<ManufacturerRepositoryTest> logger, SQLiteAsyncConnection database, HttpClient httpClient, IMapper mapper)
+    public ProductRepositoryTest(ILogger<ProductRepositoryTest> logger, SQLiteAsyncConnection database, HttpClient httpClient, IMapper mapper)
     {
         _logger = logger;
         _database = database;
         _httpClient = httpClient;
         _mapper = mapper;
-        _apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/manufacturer" ?? string.Empty;
+        _apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/product" ?? string.Empty;
         _ = InitAsync();
     }
 
@@ -32,12 +32,12 @@ public class ManufacturerRepositoryTest
             return;
 
         _database = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);
-        await _database.CreateTableAsync<Manufacturer>();
+        await _database.CreateTableAsync<Product>();
         await _database.CreateTableAsync<SyncQueueItem>();
 
     }
 
-    public async Task<Manufacturer?> GetAsync(ulong id)
+    public async Task<Product?> GetAsync(ulong id)
     {
         if (await IsOnlineAsync())
         {
@@ -46,26 +46,27 @@ public class ManufacturerRepositoryTest
                 var response = await _httpClient.GetAsync($"{_apiUrl}/{id}");
                 if (response.IsSuccessStatusCode)
                 {
-                    var json = await response.Content.ReadFromJsonAsync<ManufacturerDto>();
-                    var domainItem = _mapper.Map<Manufacturer>(json ?? new ManufacturerDto());
+                    var json = await response.Content.ReadFromJsonAsync<ProductDto>();
+                    var domainItem = _mapper.Map<Product>(json ?? new ProductDto());
                     return domainItem;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to get manufacturer online.");
+                _logger.LogError(ex, "Failed to get product online.");
             }
         }
 
-        var manufacturer = await _database.FindAsync<Manufacturer>(id);
-        var products = _database.Table<Product?>()
-            .Where(p => p.ManufacturerId == manufacturer.Id).ToListAsync();
-        manufacturer.Products = await products;
-
-        return manufacturer;
+        Product? product = await _database.FindAsync<Product>(id) ?? null;
+        if (product.ManufacturerId > 0)
+        { 
+            Manufacturer manufacturer = await _database.FindAsync<Manufacturer>(product.ManufacturerId);
+            product.Manufacturer = manufacturer;
+        }
+        return product;
     }
 
-    public async Task<List<Manufacturer>> ListAsync()
+    public async Task<List<Product>> ListAsync()
     {
         if (await IsOnlineAsync())
         {
@@ -74,32 +75,39 @@ public class ManufacturerRepositoryTest
                 var response = await _httpClient.GetAsync(_apiUrl);
                 if (response.IsSuccessStatusCode)
                 {
-                    var dtos = await response.Content.ReadFromJsonAsync<IEnumerable<ManufacturerDto>>();
-                    var domainItems = _mapper.Map<List<Manufacturer>>(dtos ?? new List<ManufacturerDto>());
+                    var dtos = await response.Content.ReadFromJsonAsync<IEnumerable<ProductDto>>();
+                    var domainItems = _mapper.Map<List<Product>>(dtos ?? new List<ProductDto>());
                     return domainItems;
                 }
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to list manufacturers online.");
-                return new List<Manufacturer>();
+                _logger.LogError(ex, "Failed to list products online.");
+                return new List<Product>();
             }
         }
 
         try
         {
-            return await _database.Table<Manufacturer>().ToListAsync();
+            var products = await _database.Table<Product>().ToListAsync();
+            var manufacturers = await _database.Table<Manufacturer>().ToListAsync();
+
+            foreach (var product in products)
+            {
+                product.Manufacturer = manufacturers.FirstOrDefault(m => m.Id == product.ManufacturerId);
+            }
+            return products;
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Error listing manufacturers from database");
-            return new List<Manufacturer>();
+            _logger.LogError(ex, "Error listing products from database");
+            return new List<Product>();
         }
     }
 
-    public async Task<ulong> SaveItemAsync(Manufacturer item, bool trackSync)
+    public async Task<ulong> SaveItemAsync(Product item, bool trackSync)
     {
-        ManufacturerDto dto = _mapper.Map<ManufacturerDto>(item);
+        ProductDto dto = _mapper.Map<ProductDto>(item);
         if (item.Id == 0)
         {
             if (await IsOnlineAsync())
@@ -107,7 +115,7 @@ public class ManufacturerRepositoryTest
                 var response = await _httpClient.PostAsJsonAsync($"{_apiUrl}", dto);
                 if (!response.IsSuccessStatusCode)
                 {
-                    throw new Exception($"Error while saving item: {response.StatusCode}");
+                    throw new Exception($"Error while updating item: {response.StatusCode}");
                 }
                 return item.Id;
             }
@@ -154,7 +162,7 @@ public class ManufacturerRepositoryTest
             return item.Id;
         }
     }
-    public async Task<int> DeleteItemAsync(Manufacturer item)
+    public async Task<int> DeleteItemAsync(Product item)
     {
         if (await IsOnlineAsync())
         {
@@ -169,7 +177,7 @@ public class ManufacturerRepositoryTest
             }
             catch (Exception ex)
             {
-                _logger.LogError(ex, "Failed to delete manufacturer online.");
+                _logger.LogError(ex, "Failed to delete product online.");
             }
         }
 

@@ -3,6 +3,8 @@ using ArcsomAssetManagement.Client.DTOs.Business;
 using ArcsomAssetManagement.Client.Models;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using System.Reflection.Metadata;
+using System.Threading;
 
 namespace ArcsomAssetManagement.Client.Controllers;
 
@@ -82,7 +84,7 @@ public class ManufacturerController : ControllerBase
         return Ok(manufacturers);
     }
     [HttpPost]
-    public async Task<IActionResult> Add([FromBody] Manufacturer request)
+    public async Task<IActionResult> Add([FromBody] ManufacturerDto request)
     {
         var source = new CancellationTokenSource();
         source.CancelAfter(TimeSpan.FromSeconds(10));
@@ -92,7 +94,12 @@ public class ManufacturerController : ControllerBase
         {
             Name = request.Name,
             Contact = request.Contact,
-            Products = request.Products
+            Products = request.ProductDtos.Select(p => new Product
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Manufacturer = null
+            }).ToList()
         };
         try
         {
@@ -113,24 +120,31 @@ public class ManufacturerController : ControllerBase
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> Update([FromRoute] ulong id, [FromBody] Manufacturer request)
+    public async Task<IActionResult> Update([FromRoute] ulong id, [FromBody] ManufacturerDto request)
     {
         var source = new CancellationTokenSource();
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
-        var manufacturer = await _context.Manufacturers.FirstOrDefaultAsync(c => c.Id == id, stoppingToken);
-        if (manufacturer == null)
+        try
         {
-            return NotFound("Not Found");
+            var manufacturer = await _context.Manufacturers.Include(p => p.Products)
+                .FirstOrDefaultAsync(c => c.Id == id, stoppingToken);
+            if (manufacturer == null)
+            {
+                return NotFound("Not Found");
+            }
+            manufacturer.Name = request.Name;
+            manufacturer.Contact = request.Contact;
+
+            await _context.SaveChangesAsync(stoppingToken);
+
+            return NoContent();
         }
-        manufacturer.Name = request.Name;
-        manufacturer.Contact = request.Contact;
-        manufacturer.Products = request.Products;
-
-        await _context.SaveChangesAsync(stoppingToken);
-
-        return Ok(manufacturer);
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]

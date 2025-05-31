@@ -10,7 +10,6 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 {
     private Manufacturer? _manufacturer;
     private ManufacturerRepositoryTest _manufacturerRepository;
-    //private IProductRepository _productRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -28,7 +27,6 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
     public ManufacturerDetailPageModel(ManufacturerRepositoryTest manufacturerRepository, ModalErrorHandler errorHandler)//IProductRepository productRepository
     {
         _manufacturerRepository = manufacturerRepository;
-        //_productRepository = productRepository;
 
         _errorHandler = errorHandler;
     }
@@ -50,7 +48,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
             Name = _manufacturer.Name;
             Contact = _manufacturer.Contact;
-            //Products = new ObservableCollection<Product>(await _productRepository.ListAsync(_manufacturer.Id));
+            Products = _manufacturer.Products.ToObservableCollection();
         }
         catch (Exception e)
         {

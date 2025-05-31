@@ -40,7 +40,6 @@
                 </sf:SfTextInputLayout>
 
 
-
                 <Button Text="Save"   
                    HeightRequest="{OnIdiom 44, Desktop=60}"  
                    Command="{Binding SaveCommand}" />  

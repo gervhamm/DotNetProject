@@ -80,51 +80,65 @@ public class ProductController : ControllerBase
     }
 
     [HttpPost]
-    public async Task<IActionResult> Add([FromBody] Product request)
+    public async Task<IActionResult> Add([FromBody] ProductDto request)
     {
         var source = new CancellationTokenSource();
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
         var manufacturer = await _context.Manufacturers
-            .FirstOrDefaultAsync(m => m.Id == request.Manufacturer.Id, stoppingToken);
-
-        request.Manufacturer = null;
-
-        if (manufacturer is null)
-        {
-            return BadRequest("Manufacturer not found");
-        }
+            .FirstOrDefaultAsync(m => m.Id == request.ManufacturerDto.Id, stoppingToken);
 
         var product = new Product
         {
             Name = request.Name,
             Manufacturer = manufacturer
         };
-
-        var resutl = await _context.Products.AddAsync(product, stoppingToken);
-        var resultSave = await _context.SaveChangesAsync(stoppingToken);
-
-        return Ok(product.Id);
+        try
+        {
+            await _context.Products.AddAsync(product, stoppingToken);
+            await _context.SaveChangesAsync(stoppingToken);
+            return Ok(product.Id);
+        }
+        catch (DbUpdateException ex)
+        {
+            _logger.LogError(ex, "Error adding product");
+            return BadRequest("An error occurred while adding the product.");
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Unexpected error");
+            return StatusCode(500, "An unexpected error occurred.");
+        }
     }
 
     [HttpPatch("{id}")]
-    public async Task<IActionResult> Update([FromRoute] ulong id, [FromBody] Product request)
+    public async Task<IActionResult> Update([FromRoute] ulong id, [FromBody] ProductDto request)
     {
         var source = new CancellationTokenSource();
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
-        var product = await _context.Products.FirstOrDefaultAsync(c => c.Id == id, stoppingToken);
-        if (product == null)
+        try
         {
-            return NotFound("Not Found");
-        }
-        product.Name = request.Name;
-        product.Manufacturer = request.Manufacturer;
-        await _context.SaveChangesAsync(stoppingToken);
+            var product = await _context.Products.Include(m => m.Manufacturer)
+                .FirstOrDefaultAsync(c => c.Id == id, stoppingToken);
+            if (product == null)
+            {
+                return NotFound("Not Found");
+            }
+            product.Name = request.Name;
+            product.Manufacturer = await _context.Manufacturers
+                .FirstOrDefaultAsync(m => m.Id == request.ManufacturerDto.Id, stoppingToken);
 
-        return Ok(product);
+            await _context.SaveChangesAsync(stoppingToken);
+
+            return NoContent();
+        }
+        catch (Exception ex)
+        {
+            return StatusCode(500, ex.Message);
+        }
     }
 
     [HttpDelete("{id}")]

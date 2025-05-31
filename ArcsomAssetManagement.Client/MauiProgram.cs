@@ -56,6 +56,7 @@ namespace ArcsomAssetManagement.Client
 
             builder.Services.AddHttpClient();
             builder.Services.AddSingleton<ManufacturerRepositoryTest>();
+            builder.Services.AddSingleton<ProductRepositoryTest>();
 
             //builder.Services.AddSingleton(provider =>
             //{
@@ -81,29 +82,29 @@ namespace ArcsomAssetManagement.Client
             //    return new SyncRepository<Manufacturer, ManufacturerDto>(onlineRepository, offlineRepository, mapper);
             //});
 
-            builder.Services.AddSingleton(provider =>
-            {
-                var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
-                var apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/product" ?? string.Empty;
+            //builder.Services.AddSingleton(provider =>
+            //{
+            //    var httpClientFactory = provider.GetRequiredService<IHttpClientFactory>();
+            //    var apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/product" ?? string.Empty;
 
-                return new ProductOnlineRepository(httpClientFactory.CreateClient(), apiUrl);
-            });
+            //    return new ProductOnlineRepository(httpClientFactory.CreateClient(), apiUrl);
+            //});
 
-            builder.Services.AddSingleton<ProductOfflineRepository>(provider =>
-            {
-                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
-                var logger = provider.GetRequiredService<ILogger<ProductOfflineRepository>>();
-                return new ProductOfflineRepository(logger, sqliteConnection);
-            });
+            //builder.Services.AddSingleton<ProductOfflineRepository>(provider =>
+            //{
+            //    var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+            //    var logger = provider.GetRequiredService<ILogger<ProductOfflineRepository>>();
+            //    return new ProductOfflineRepository(logger, sqliteConnection);
+            //});
 
-            builder.Services.AddSingleton<IRepository<Product>>(provider =>
-            {
-                var onlineRepository = provider.GetRequiredService<ProductOnlineRepository>();
-                var offlineRepository = provider.GetRequiredService<ProductOfflineRepository>();
-                var mapper = provider.GetRequiredService<IMapper>();
+            //builder.Services.AddSingleton<IRepository<Product>>(provider =>
+            //{
+            //    var onlineRepository = provider.GetRequiredService<ProductOnlineRepository>();
+            //    var offlineRepository = provider.GetRequiredService<ProductOfflineRepository>();
+            //    var mapper = provider.GetRequiredService<IMapper>();
 
-                return new SyncRepository<Product, ProductDto>(onlineRepository, offlineRepository, mapper);
-            });
+            //    return new SyncRepository<Product, ProductDto>(onlineRepository, offlineRepository, mapper);
+            //});
 
 
             builder.Services.AddTransientWithShellRoute<ManufacturerDetailPage, ManufacturerDetailPageModel>("manufacturer");

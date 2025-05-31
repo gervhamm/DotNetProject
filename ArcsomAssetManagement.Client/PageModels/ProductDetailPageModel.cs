@@ -1,7 +1,7 @@
 ﻿using ArcsomAssetManagement.Client.Models;
+using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System;
 using System.Collections.ObjectModel;
 using System.Threading.Tasks;
 
@@ -11,8 +11,8 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
 {
     public const string ManufacturerQueryKey = "manufacturer";
 
-    private IRepository<Product> _productRepository;
-    private IRepository<Manufacturer> _manufacturerRepository;
+    private ProductRepositoryTest _productRepository;
+    private ManufacturerRepositoryTest _manufacturerRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -21,7 +21,10 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     private Product? _product = new Product();
 
     [ObservableProperty]
-    private List<Manufacturer> _manufacturers = [];
+    private Manufacturer? _manufacturer;
+
+    [ObservableProperty]
+    private ObservableCollection<Manufacturer> _manufacturers = [];
 
     [ObservableProperty]
     private Manufacturer? _selectedManufacturer;
@@ -29,82 +32,64 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     [ObservableProperty]
     private int _selectedManufacturerIndex;
 
-    [ObservableProperty]
-    private bool _isSaveEnabled;
-
-    [ObservableProperty]
-    private string _manufacturerName = string.Empty;
-
-    [ObservableProperty]
-    bool _isBusy;
-    public ProductDetailPageModel(IRepository<Product> productRepository, IRepository<Manufacturer> manufacturerRepository, ModalErrorHandler errorHandler)
+    public ProductDetailPageModel(ProductRepositoryTest productRepository,ManufacturerRepositoryTest manufacturerRepository ,ModalErrorHandler errorHandler)
     {
         _productRepository = productRepository;
         _manufacturerRepository = manufacturerRepository;
         _errorHandler = errorHandler;
     }
-
-    [RelayCommand]
-    private async Task LoadData(ulong id)
-    {
-        try
-        {
-            IsBusy = true;
-
-            Product = await _productRepository.GetAsync(id);    
-
-            if (Product.IsNullOrNew())
-            {
-                _errorHandler.HandleError(new Exception($"Product with id {id} could not be found."));
-                return;
-            }
-            Manufacturers = await _manufacturerRepository.ListAsync(); 
-            Manufacturers.Insert(0, new Manufacturer { Id = 0, Name = "Unknown Manufacturer" });
-            SelectedManufacturer = Product.Manufacturer;
-            if (SelectedManufacturer != null)
-            {
-                SelectedManufacturerIndex = Manufacturers.ToList().FindIndex(m => string.Equals(m.Name, SelectedManufacturer.Name, StringComparison.OrdinalIgnoreCase));
-                ManufacturerName = SelectedManufacturer.Name;
-            }
-
-        }
-        catch (Exception e)
-        {
-            _errorHandler.HandleError(e);
-        }
-        finally
-        {
-            IsBusy = false;
-        }
-    }
-
-    private async Task LoadManufacturers() =>
-        Manufacturers = await _manufacturerRepository.ListAsync();
-
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {
+        LoadProductAsync(query).FireAndForgetSafeAsync(_errorHandler);
+    }
+    private async Task LoadProductAsync(IDictionary<string, object> query)
+    {
+        if (query.TryGetValue(ManufacturerQueryKey, out var manufacturer))
+            Manufacturer = (Manufacturer)manufacturer;
+
+        ulong productId = 0;
+
         if (query.ContainsKey("id"))
         {
-            ulong id = Convert.ToUInt64(query["id"]);
-            LoadData(id).FireAndForgetSafeAsync(_errorHandler);
-        }
-        else if (query.ContainsKey("refresh"))
-        {
-            RefreshData().FireAndForgetSafeAsync(_errorHandler);
+            productId = Convert.ToUInt64(query["id"]);
+
+            try
+            {
+                Product = await _productRepository.GetAsync(productId);
+
+                if (Product.IsNullOrNew())
+                {
+                    _errorHandler.HandleError(new Exception($"Product with id {productId} could not be found."));
+                    return;
+                }
+                await LoadManufacturers();
+
+                SelectedManufacturer = Product.Manufacturer;
+                if (SelectedManufacturer != null)
+                {
+                    SelectedManufacturerIndex = Manufacturers.ToList().FindIndex(m => string.Equals(m.Name, SelectedManufacturer.Name, StringComparison.OrdinalIgnoreCase));
+                    Manufacturer = SelectedManufacturer;
+                }
+            }
+            catch (Exception e)
+            {
+                _errorHandler.HandleError(e);
+            }
         }
         else
         {
-            Task.WhenAll(LoadManufacturers()).FireAndForgetSafeAsync(_errorHandler);
+            await LoadManufacturers();
             _product = new();
+
+            if (Manufacturer is not null) //Navigated here from Manufacturer Detail Page
+            {
+                SelectedManufacturer = Manufacturer;
+                SelectedManufacturerIndex = Manufacturers.ToList().FindIndex(p => p.Id == Manufacturer.Id);
+            }
+            ;
         }
     }
-    private async Task RefreshData()
-    {
-        if (Product.IsNullOrNew())
-        {
-            return;
-        }
-    }
+
     [RelayCommand]
     private async Task Save()
     {
@@ -117,7 +102,15 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
         }
 
         Product.Manufacturer = SelectedManufacturer;
-        await _productRepository.SaveItemAsync(Product);
+        Product.ManufacturerId = Product.Manufacturer.Id;
+        try
+        {
+            await _productRepository.SaveItemAsync(Product, true);
+        }
+        catch (Exception e)
+        {
+            _errorHandler.HandleError(e);
+        }
 
         await Shell.Current.GoToAsync("..");
         // TODO: await AppShell.DisplayToastAsync("Product saved");
@@ -135,5 +128,11 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
         await _productRepository.DeleteItemAsync(Product);
         await Shell.Current.GoToAsync("..");
         //TODO: await AppShell.DisplayToastAsync("Product deleted");
+    }
+    private async Task LoadManufacturers()
+    {
+        var manufacturersList = await _manufacturerRepository.ListAsync();
+        Manufacturers = manufacturersList.ToObservableCollection();
+        Manufacturers.Insert(0, new Manufacturer { Id = 0, Name = "--None--", Contact = null, Products = new List<Product>() });
     }
 }
