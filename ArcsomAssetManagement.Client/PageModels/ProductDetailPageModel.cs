@@ -11,8 +11,8 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
 {
     public const string ManufacturerQueryKey = "manufacturer";
 
-    private ProductRepositoryTest _productRepository;
-    private ManufacturerRepositoryTest _manufacturerRepository;
+    private ProductRepository _productRepository;
+    private ManufacturerRepository _manufacturerRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -32,7 +32,7 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
     [ObservableProperty]
     private int _selectedManufacturerIndex;
 
-    public ProductDetailPageModel(ProductRepositoryTest productRepository,ManufacturerRepositoryTest manufacturerRepository ,ModalErrorHandler errorHandler)
+    public ProductDetailPageModel(ProductRepository productRepository,ManufacturerRepository manufacturerRepository ,ModalErrorHandler errorHandler)
     {
         _productRepository = productRepository;
         _manufacturerRepository = manufacturerRepository;

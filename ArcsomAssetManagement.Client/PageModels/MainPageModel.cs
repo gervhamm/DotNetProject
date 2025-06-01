@@ -83,7 +83,7 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
             //}
             // TODO: Remove
 
-            await Shell.Current.GoToAsync("//projects");
+            await Shell.Current.GoToAsync("//manufacturer");
         }
         catch (Exception ex)
         {

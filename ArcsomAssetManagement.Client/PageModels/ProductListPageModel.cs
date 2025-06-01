@@ -7,7 +7,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ProductListPageModel : ObservableObject
 {
-    private readonly ProductRepositoryTest _productRepository;
+    private readonly ProductRepository _productRepository;
     
     private List<Manufacturer> _manufacturers = [];
 
@@ -20,7 +20,7 @@ public partial class ProductListPageModel : ObservableObject
     [ObservableProperty]
     private ObservableCollection<Product> _products = [];
 
-    public ProductListPageModel(ProductRepositoryTest productRepository)
+    public ProductListPageModel(ProductRepository productRepository)
     {
         _productRepository = productRepository;
         //_manufacturerRepository = manufacturerRepository;

@@ -15,38 +15,38 @@
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
 
-    <VerticalStackLayout 
-        Margin="{StaticResource LayoutPadding}" 
-        Spacing="{StaticResource LayoutSpacing}">
-        <SearchBar Placeholder="Search products..."
-                   Text="{Binding SearchText}"
-                   TextChanged="SearchBar_TextChanged" />
-
-        <Button Text="Search" 
-            Command="{Binding FilterProductsCommand}"/>
-
-        <CollectionView ItemsSource="{Binding FilteredProducts}" >
-            <CollectionView.ItemsLayout>
-                <LinearItemsLayout Orientation="Vertical" ItemSpacing="5"/>
-            </CollectionView.ItemsLayout>
-            <CollectionView.ItemTemplate>
-                <DataTemplate x:DataType="models:Product">
-                    <Border>
-                        <VerticalStackLayout>
-                            <Label Text="{Binding Name}" FontSize="18" />
-                            <Label Text="{Binding Manufacturer.Name}" FontSize="14" TextColor="Gray" />
-                        </VerticalStackLayout>
-                        <Border.GestureRecognizers>
-                            <TapGestureRecognizer Command="{Binding NavigateToProductCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProductListPageModel}}, x:DataType=pageModels:ProductListPageModel}" CommandParameter="{Binding .}"/>
-                        </Border.GestureRecognizers>
-                    </Border>
-                </DataTemplate>
-            </CollectionView.ItemTemplate>
-        </CollectionView>
-
-        <controls:AddButton 
-            Command="{Binding AddProductCommand}" />
-    </VerticalStackLayout>
+    <Grid>
+        <ScrollView>
+            <VerticalStackLayout 
+                Margin="{StaticResource LayoutPadding}" 
+                Spacing="{StaticResource LayoutSpacing}">
+                <SearchBar Placeholder="Search products..."
+                       Text="{Binding SearchText}"
+                       TextChanged="SearchBar_TextChanged" />
+                <Button Text="Search" 
+                    Command="{Binding FilterProductsCommand}"/>
+                <VerticalStackLayout 
+                    Spacing="{StaticResource LayoutSpacing}"
+                    BindableLayout.ItemsSource="{Binding FilteredProducts}">
+                    <BindableLayout.ItemTemplate>
+                        <DataTemplate x:DataType="models:Product">
+                            <Border>
+                                <VerticalStackLayout>
+                                    <Label Text="{Binding Name}" FontSize="18" />
+                                    <Label Text="{Binding Manufacturer.Name}" FontSize="14" TextColor="Gray" />
+                                </VerticalStackLayout>
+                                <Border.GestureRecognizers>
+                                    <TapGestureRecognizer Command="{Binding NavigateToProductCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProductListPageModel}}, x:DataType=pageModels:ProductListPageModel}" CommandParameter="{Binding .}"/>
+                                </Border.GestureRecognizers>
+                            </Border>
+                        </DataTemplate>
+                    </BindableLayout.ItemTemplate>
+                </VerticalStackLayout>
+                <controls:AddButton 
+                    Command="{Binding AddProductCommand}" />
+            </VerticalStackLayout>
+        </ScrollView>
+    </Grid>
 </ContentPage>
 
     

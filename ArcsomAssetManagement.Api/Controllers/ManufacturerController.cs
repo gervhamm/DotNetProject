@@ -22,6 +22,35 @@ public class ManufacturerController : ControllerBase
     }
 
     [HttpGet]
+    [Route("api/[controller]/Paged")]
+    public async Task<IActionResult> Get([FromRoute] int pageNumber=1, int pageSize = 3)
+    {
+        var source = new CancellationTokenSource();
+        source.CancelAfter(TimeSpan.FromSeconds(10));
+        var stoppingToken = source.Token;
+
+        var manufacturers = await _context.Manufacturers.AsNoTracking()
+            .Skip((pageNumber - 1)* pageSize)
+            .Take(pageSize)
+            .Select(p => new ManufacturerDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                Contact = p.Contact,
+                ProductDtos = null
+            })
+            .ToListAsync(stoppingToken);
+
+        var totalManufacturers = await _context.Manufacturers.CountAsync(stoppingToken);
+
+        if (manufacturers == null)
+        {
+            return NotFound("Not Found");
+        }
+        return Ok(manufacturers);
+    }
+
+    [HttpGet]
     public async Task<IActionResult> Get()
     {
         var source = new CancellationTokenSource();

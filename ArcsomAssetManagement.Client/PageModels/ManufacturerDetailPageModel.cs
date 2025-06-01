@@ -9,7 +9,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttributable
 {
     private Manufacturer? _manufacturer;
-    private ManufacturerRepositoryTest _manufacturerRepository;
+    private ManufacturerRepository _manufacturerRepository;
 
     private readonly ModalErrorHandler _errorHandler;
 
@@ -24,7 +24,7 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
     [ObservableProperty]
     bool _isBusy;
-    public ManufacturerDetailPageModel(ManufacturerRepositoryTest manufacturerRepository, ModalErrorHandler errorHandler)//IProductRepository productRepository
+    public ManufacturerDetailPageModel(ManufacturerRepository manufacturerRepository, ModalErrorHandler errorHandler)//IProductRepository productRepository
     {
         _manufacturerRepository = manufacturerRepository;
 

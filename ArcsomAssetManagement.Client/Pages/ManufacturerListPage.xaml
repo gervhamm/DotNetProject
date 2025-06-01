@@ -21,14 +21,14 @@
     <Grid>
         <ScrollView>
             <VerticalStackLayout 
-        Margin="{StaticResource LayoutPadding}" 
-        Spacing="{StaticResource LayoutSpacing}">
+                Margin="{StaticResource LayoutPadding}" 
+                Spacing="{StaticResource LayoutSpacing}">
                 <SearchBar Placeholder="Search manufacturers..."
-           Text="{Binding SearchText}"
-           TextChanged="SearchBar_TextChanged" />
+                   Text="{Binding SearchText}"
+                   TextChanged="SearchBar_TextChanged" />
 
                 <Button Text="Search" 
-            Command="{Binding FilterManufacturersCommand}"/>
+                    Command="{Binding FilterManufacturersCommand}"/>
                 <VerticalStackLayout 
                     Spacing="{StaticResource LayoutSpacing}"
                     BindableLayout.ItemsSource="{Binding FilteredManufacturers}">
@@ -46,14 +46,14 @@
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
+
+                <HorizontalStackLayout HorizontalOptions="Center" x:Name="PaginationPanel" Spacing="1" Padding="10" />
                 <controls:AddButton 
-    Command="{Binding AddManufacturerCommand}" />
+                    Command="{Binding AddManufacturerCommand}" />
             </VerticalStackLayout>
         </ScrollView>
     </Grid>
     
-    
-
 </ContentPage>
 
     

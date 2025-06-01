@@ -8,7 +8,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ManufacturerListPageModel : ObservableObject
 {
-    private readonly ManufacturerRepositoryTest _manufacturerRepository;
+    private readonly ManufacturerRepository _manufacturerRepository;
     //private readonly SyncService<Manufacturer,ManufacturerDto> _syncService;
 
     [ObservableProperty]
@@ -21,16 +21,29 @@ public partial class ManufacturerListPageModel : ObservableObject
     [ObservableProperty]
     private List<Manufacturer> _manufacturers = [];
 
-    public ManufacturerListPageModel(ManufacturerRepositoryTest manufacturerRepository)//, SyncService<Manufacturer, ManufacturerDto> syncService)
+    [ObservableProperty]
+    private PaginationModel pagination;
+
+    [ObservableProperty]
+    private int selectedPage;
+
+    public ManufacturerListPageModel(ManufacturerRepository manufacturerRepository)//, SyncService<Manufacturer, ManufacturerDto> syncService)
     {
         _manufacturerRepository = manufacturerRepository;
         //_syncService = syncService;
+        pagination = new PaginationModel
+        {
+            CurrentPage = 1,
+            PageSize = 10,
+            TotalItems = 10
+        };
+
     }
 
     [RelayCommand]
     private async Task Appearing()
     {
-        Manufacturers = await _manufacturerRepository.ListAsync();
+        (Manufacturers, pagination) = await _manufacturerRepository.ListAsync(pageNumber: 1, pageSize: 3);
         FilteredManufacturers = Manufacturers;
     }
 
@@ -52,13 +65,18 @@ public partial class ManufacturerListPageModel : ObservableObject
         }
         else
         {
-            var filtered = Manufacturers
-                .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                            (p.Contact?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false))
-                .ToList();
-            FilteredManufacturers = new List<Manufacturer>(filtered);
+            (List<Manufacturer> filtered, pagination) = await _manufacturerRepository.ListAsync(pageNumber: 1, pageSize: 3, filter: SearchText);
+
+            FilteredManufacturers = filtered;
         }
     }
+    [RelayCommand]
+    private async Task GoToPageAsync(int pageNumber)
+    {
+        var page = (int)pageNumber;
+        Appearing();
+    }
+
     [RelayCommand]
     private async Task SyncManufacturers()
     {
