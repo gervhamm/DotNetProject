@@ -1,5 +1,5 @@
-﻿using ArcsomAssetManagement.Client.DTOs.Business;
-using ArcsomAssetManagement.Client.Models;
+﻿using ArcsomAssetManagement.Client.Models;
+using ArcsomAssetManagement.Client.PageModels.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
@@ -25,6 +25,9 @@ public partial class ManufacturerListPageModel : ObservableObject
     private PaginationModel pagination;
 
     [ObservableProperty]
+    private List<PageNumberItem> _pageNumbers = [];
+
+    [ObservableProperty]
     private int selectedPage;
 
     public ManufacturerListPageModel(ManufacturerRepository manufacturerRepository)//, SyncService<Manufacturer, ManufacturerDto> syncService)
@@ -34,17 +37,19 @@ public partial class ManufacturerListPageModel : ObservableObject
         pagination = new PaginationModel
         {
             CurrentPage = 1,
-            PageSize = 10,
+            PageSize = 3,
             TotalItems = 10
         };
+        PageNumbers = [new PageNumberItem { Number = "1", IsCurrent = true }];
 
     }
 
     [RelayCommand]
     private async Task Appearing()
     {
-        (Manufacturers, pagination) = await _manufacturerRepository.ListAsync(pageNumber: 1, pageSize: 3);
+        (Manufacturers, pagination) = await _manufacturerRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize);
         FilteredManufacturers = Manufacturers;
+        PageNumbers = PaginationHelper.SetPagenumbers(pagination.CurrentPage, pagination.TotalPages);
     }
 
     [RelayCommand]
@@ -65,15 +70,39 @@ public partial class ManufacturerListPageModel : ObservableObject
         }
         else
         {
-            (List<Manufacturer> filtered, pagination) = await _manufacturerRepository.ListAsync(pageNumber: 1, pageSize: 3, filter: SearchText);
+            (List<Manufacturer> filtered, pagination) = await _manufacturerRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize, filter: SearchText);
 
             FilteredManufacturers = filtered;
         }
     }
     [RelayCommand]
-    private async Task GoToPageAsync(int pageNumber)
+    private async Task GoToPageAsync(string pageNumber)
     {
-        var page = (int)pageNumber;
+        var newPageNumber = pagination.CurrentPage;
+
+        switch (pageNumber)
+        {
+            case "Next":
+                if (Pagination.CurrentPage < Pagination.TotalPages)
+                    newPageNumber = Pagination.CurrentPage + 1;
+                else
+                    return;
+                break;
+            case "Previous":
+                if (Pagination.CurrentPage > 1)
+                    newPageNumber = Pagination.CurrentPage - 1;
+                else
+                    return;
+                break;
+            default:
+                if (!int.TryParse(pageNumber, out _))
+                {
+                    return;
+                }
+                newPageNumber = int.Parse(pageNumber);
+                break;
+        }
+        Pagination.CurrentPage = newPageNumber;
         Appearing();
     }
 
