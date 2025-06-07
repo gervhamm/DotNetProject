@@ -21,9 +21,8 @@ public class ManufacturerController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet]
-    [Route("api/[controller]/Paged")]
-    public async Task<IActionResult> Get([FromRoute] int pageNumber=1, int pageSize = 3)
+    [HttpGet("Paged")]
+    public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 3)
     {
         var source = new CancellationTokenSource();
         source.CancelAfter(TimeSpan.FromSeconds(10));
@@ -47,6 +46,9 @@ public class ManufacturerController : ControllerBase
         {
             return NotFound("Not Found");
         }
+
+        Response.Headers.Add("X-Total-Count", totalManufacturers.ToString());
+
         return Ok(manufacturers);
     }
 

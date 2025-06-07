@@ -2,6 +2,7 @@
 using ArcsomAssetManagement.Client.Models;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
+using Microsoft.Maui.Graphics.Text;
 using SQLite;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -107,15 +108,21 @@ public class ManufacturerRepository
             TotalItems = pageSize
         };
 
+        var apiUrlPaged = _apiUrl + $"/Paged?pageNumber={pageNumber}&pageSize={pageSize}";
+
         if (await IsOnlineAsync())
         {
             try
             {
-                var response = await _httpClient.GetAsync(_apiUrl);
+                var response = await _httpClient.GetAsync(apiUrlPaged);
                 if (response.IsSuccessStatusCode)
                 {
+                    string totalManufactuers = response.Headers.GetValues("X-Total-Count").FirstOrDefault();
                     var dtos = await response.Content.ReadFromJsonAsync<IEnumerable<ManufacturerDto>>();
+
                     var domainItems = _mapper.Map<List<Manufacturer>>(dtos ?? new List<ManufacturerDto>());
+                    int.TryParse(totalManufactuers, out int totalCount);
+                    pagination.TotalItems = totalCount;
                     return (domainItems, pagination);
                 }
             }
