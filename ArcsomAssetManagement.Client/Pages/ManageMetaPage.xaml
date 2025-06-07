@@ -6,7 +6,7 @@
              xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
              x:DataType="pageModels:ManageMetaPageModel"
              x:Class="ArcsomAssetManagement.Client.Pages.ManageMetaPage"
-             Title="Categories and Tags">
+             Title="Meta Page">
 
 
     <ContentPage.Behaviors>
@@ -14,41 +14,46 @@
                 EventName="Appearing"                
                 Command="{Binding AppearingCommand}" />
     </ContentPage.Behaviors>
-    <ContentPage.Resources>
-        <Style x:Key="InvalidEntryStyle" TargetType="Entry">
-            <Setter Property="TextColor" Value="Red" />
-        </Style>
-
-        <Style TargetType="Entry">
-            <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}" />
-            <Setter Property="BackgroundColor" Value="Transparent" />
-            <Setter Property="FontFamily" Value="OpenSansRegular"/>
-            <Setter Property="FontSize" Value="{OnIdiom 16,Desktop=24}" />
-            <Setter Property="PlaceholderColor" Value="{AppThemeBinding Light={StaticResource Gray200}, Dark={StaticResource Gray500}}" />
-            <Setter Property="MinimumHeightRequest" Value="44"/>
-            <Setter Property="MinimumWidthRequest" Value="44"/>
-            <Setter Property="VisualStateManager.VisualStateGroups">
-                <VisualStateGroupList>
-                    <VisualStateGroup x:Name="CommonStates">
-                        <VisualState x:Name="Normal" />
-                        <VisualState x:Name="Disabled">
-                            <VisualState.Setters>
-                                <Setter Property="TextColor" Value="{AppThemeBinding Light={StaticResource Gray300}, Dark={StaticResource Gray600}}" />
-                            </VisualState.Setters>
-                        </VisualState>
-                    </VisualStateGroup>
-                </VisualStateGroupList>
-            </Setter>
-        </Style>
+    <ContentPage.Resources>        
     </ContentPage.Resources>
 
-    <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Reset App" Command="{Binding ResetCommand}" />
+    <ContentPage.ToolbarItems>        
     </ContentPage.ToolbarItems>
 
     <ScrollView>
         <VerticalStackLayout Spacing="{StaticResource LayoutSpacing}" Padding="{StaticResource LayoutPadding}">
-           
+            <Label Text="Synchonization" Style="{StaticResource Headline}" />
+            <ImageButton 
+                Source="{StaticResource IconSync}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Aspect="Center"
+                HeightRequest="44"
+                WidthRequest="44"
+                Command="{Binding SyncAllCommand}"
+            />
+            <Label Text="Reset App" Style="{StaticResource Headline}" />
+            <ImageButton 
+                Source="{StaticResource IconReset}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Aspect="Center"
+                HeightRequest="44"
+                WidthRequest="44"
+                Command="{Binding ResetCommand}"
+            />
+            <Label Text="Online State" Style="{StaticResource Headline}" />
+            <ImageButton 
+                Source="{StaticResource IconConnected}"
+                HorizontalOptions="Center"
+                VerticalOptions="Center"
+                Aspect="Center"
+                HeightRequest="44"
+                WidthRequest="44"
+                BackgroundColor="{Binding IsOnlineColor}"
+                Command="{Binding ToggleOnlineCommand}"
+            />
+            <Label Text="Online State" Style="{StaticResource Headline}" />
         </VerticalStackLayout>
     </ScrollView>
 </ContentPage>

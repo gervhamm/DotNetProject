@@ -9,7 +9,7 @@ using System.Text.Json;
 
 namespace ArcsomAssetManagement.Client.Data;
 
-public class ManufacturerRepository
+public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
 {
     private readonly ILogger<ManufacturerRepository> _logger;
     private SQLiteAsyncConnection? _database;
@@ -167,11 +167,7 @@ public class ManufacturerRepository
         {
             if (await IsOnlineAsync())
             {
-                var response = await _httpClient.PostAsJsonAsync($"{_apiUrl}", dto);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Error while saving item: {response.StatusCode}");
-                }
+                await SaveItemOnlineAsync(dto);
                 return item.Id;
             }
 
@@ -194,11 +190,7 @@ public class ManufacturerRepository
 
             if (await IsOnlineAsync())
             {
-                var response = await _httpClient.PatchAsJsonAsync($"{_apiUrl}/{item.Id}", dto);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Error while updating item: {response.StatusCode}");
-                }
+                await UpdateItemOnlineAsync(dto);
                 return item.Id;
             }
             var result = await _database.UpdateAsync(item);
@@ -217,14 +209,22 @@ public class ManufacturerRepository
             return item.Id;
         }
     }
+    public async Task SaveItemOnlineAsync(ManufacturerDto dto)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"{_apiUrl}", dto);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error while saving item: {response.StatusCode}");
+        }
+    }
     public async Task<int> DeleteItemAsync(Manufacturer item)
     {
         if (await IsOnlineAsync())
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"{_apiUrl}/{item.Id}");
-                if (response.IsSuccessStatusCode)
+                var isDeletedOnline = await DeleteItemOnlineAsync(item.Id);
+                if (isDeletedOnline)
                 {
                     await _database.DeleteAsync(item);
                     return 1;
@@ -246,6 +246,66 @@ public class ManufacturerRepository
 
         return await _database.DeleteAsync(item);
     }
+    public async Task UpdateItemOnlineAsync(ManufacturerDto dto)
+    {
+        var response = await _httpClient.PatchAsJsonAsync($"{_apiUrl}/{dto.Id}", dto);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error while updating item: {response.StatusCode}");
+        }
+    }
+    public async Task<bool> DeleteItemOnlineAsync(ulong id)
+    {
+        var response = await _httpClient.DeleteAsync($"{_apiUrl}/{id}");
+        return response.IsSuccessStatusCode;
+    }
+    public async Task<IEnumerable<ManufacturerDto>> ListOnlineAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync(_apiUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                var dtos = await response.Content.ReadFromJsonAsync<IEnumerable<ManufacturerDto>>();
+                return dtos;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to list manufacturers online.");
+            return new List<ManufacturerDto>();
+        }
+
+        return new List<ManufacturerDto>();
+    }
+
+    public async Task SaveToOfflineAsync(IEnumerable<ManufacturerDto> items)
+    {
+        var domainItems = _mapper.Map<List<Manufacturer>>(items ?? new List<ManufacturerDto>());
+
+        foreach (var item in domainItems)
+        {
+            await _database.InsertAsync(item);
+
+            //var existing = await _database.FindAsync<Manufacturer>(item.Id);
+
+            //if (existing == null)
+            //{
+            //    try
+            //    {
+            //        var response = await _database.InsertAsync(item);
+            //    }
+            //    catch (SQLiteException ex)
+            //    {
+            //        _logger.LogInformation(ex, $"Failed to insert manufacturer online. Delete the offline manufacturer.{item.Name}");
+            //    }
+            //}
+            //else
+            //{
+            //    await _database.UpdateAsync(item);
+            //}
+        }
+    }
 
     private async Task<bool> IsOnlineAsync()
     {
@@ -262,4 +322,5 @@ public class ManufacturerRepository
             return false;
         }
     }
+
 }

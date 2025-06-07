@@ -3,6 +3,9 @@ using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
 using SQLite;
 using ArcsomAssetManagement.Client.DTOs.Mapping;
+using ArcsomAssetManagement.Client.Models;
+using ArcsomAssetManagement.Client.DTOs.Business;
+using AutoMapper;
 
 namespace ArcsomAssetManagement.Client
 {
@@ -50,7 +53,16 @@ namespace ArcsomAssetManagement.Client
             //    return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
             //});
             builder.Services.AddSingleton<SeedDataService>();
+            builder.Services.AddSingleton<ConnectivityService>();
             builder.Services.AddSingleton<ModalErrorHandler>();
+
+            builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
+            {
+                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+                var onlineRepository = provider.GetRequiredService<ManufacturerRepository>();
+                var mapper = provider.GetRequiredService<IMapper>();
+                return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
+            });
 
             // Repositories
             builder.Services.AddTransient<SQLiteAsyncConnection>(provider =>

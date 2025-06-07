@@ -9,7 +9,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class ManufacturerListPageModel : ObservableObject
 {
     private readonly ManufacturerRepository _manufacturerRepository;
-    //private readonly SyncService<Manufacturer,ManufacturerDto> _syncService;
+    // private readonly SyncService<Manufacturer,ManufacturerDto> _syncService;
 
     [ObservableProperty]
     private string searchText = string.Empty;

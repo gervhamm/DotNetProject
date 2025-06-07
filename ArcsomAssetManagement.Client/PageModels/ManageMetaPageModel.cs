@@ -1,44 +1,83 @@
-using ArcsomAssetManagement.Client.Data;
+using ArcsomAssetManagement.Client.DTOs.Business;
 using ArcsomAssetManagement.Client.Models;
-using ArcsomAssetManagement.Client.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
-namespace ArcsomAssetManagement.Client.PageModels
+namespace ArcsomAssetManagement.Client.PageModels;
+//TODO: Rename "Meta"
+public partial class ManageMetaPageModel : ObservableObject
 {
-    public partial class ManageMetaPageModel : ObservableObject
+    private readonly SeedDataService _seedDataService;
+    private readonly ConnectivityService _connectivity;
+    private readonly ModalErrorHandler _errorHandler;
+    private readonly SyncService<Manufacturer, ManufacturerDto> _manufacturerSyncService;
+
+    [ObservableProperty]
+    private string _isOnlineColor = string.Empty;
+
+    [ObservableProperty]
+    private ObservableCollection<Category> _categories = [];
+
+    [ObservableProperty]
+    private ObservableCollection<Tag> _tags = [];
+
+    public ManageMetaPageModel(ConnectivityService connectivityService, SeedDataService seedDataService, ModalErrorHandler errorHandler, SyncService<Manufacturer, ManufacturerDto> syncService)
     {
-        //private readonly SeedDataService _seedDataService;
+        _connectivity = connectivityService;
+        _seedDataService = seedDataService;
+        _errorHandler = errorHandler;
+        _manufacturerSyncService = syncService;
+    }
 
-        [ObservableProperty]
-        private ObservableCollection<Category> _categories = [];
 
-        [ObservableProperty]
-        private ObservableCollection<Tag> _tags = [];
+    [RelayCommand]
+    private async Task Appearing()
+    {
+        await LoadData();
+    }
 
-        public ManageMetaPageModel()
+   
+
+    [RelayCommand]
+    private async Task Reset()
+    {
+        Preferences.Default.Remove("is_seeded");
+        await _seedDataService.LoadSeedDataAsync();
+        Preferences.Default.Set("is_seeded", true);
+        await Shell.Current.GoToAsync("//main");
+    }
+
+    [RelayCommand]
+    private async Task SyncAll()
+    {
+        try
         {
-            //_seedDataService = seedDataService;
+            await _manufacturerSyncService.ProcessSyncQueueAsync();
+            await _manufacturerSyncService.PullLatestRemoteChanges();
         }
-
-        private async Task LoadData()
+        catch (Exception e)
         {
+            _errorHandler.HandleError(e);
         }
+    }
 
-        [RelayCommand]
-        private Task Appearing()
-            => LoadData();
+    [RelayCommand]
+    private async Task ToggleOnline()
+    {
+        _connectivity.IsOnline = !_connectivity.IsOnline;
+        IsOnlineColor = _connectivity.IsOnline ? "Green" : "Red";
+    }
 
-       
-
-        [RelayCommand]
-        private async Task Reset()
+    private async Task LoadData()
+    {
+        try
         {
-            Preferences.Default.Remove("is_seeded");
-            //await _seedDataService.LoadSeedDataAsync();
-            Preferences.Default.Set("is_seeded", true);
-            await Shell.Current.GoToAsync("//main");
+            IsOnlineColor = _connectivity.IsOnline ? "Green" : "Red";
+        }
+        catch (Exception e)
+        {
+            _errorHandler.HandleError(e);
         }
     }
 }
