@@ -1,6 +1,8 @@
-﻿namespace ArcsomAssetManagement.Api.DTOs.Business
+﻿namespace ArcsomAssetManagement.Api.DTOs.Business;
+
+public class AssetDto
 {
-    public class AssetDto
-    {
-    }
+    public ulong Id { get; set; }
+    public string Name { get; set; }
+    public ProductDto ProductDto { get; set; }
 }

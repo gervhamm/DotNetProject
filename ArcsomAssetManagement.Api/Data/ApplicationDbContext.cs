@@ -9,4 +9,5 @@ public class ApplicationDbContext : DbContext
 
     public DbSet<Product> Products { get; set; } = null!;
     public DbSet<Manufacturer> Manufacturers { get; set; } = null!;
+    public DbSet<Asset> Assets { get; set; } = null!;
 }

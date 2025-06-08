@@ -3,6 +3,7 @@ using ArcsomAssetManagement.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -10,9 +11,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArcsomAssetManagement.Client.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    partial class ApplicationDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250608133726_firstAssetMigration2")]
+    partial class firstAssetMigration2
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -20,28 +23,6 @@ namespace ArcsomAssetManagement.Client.Migrations
                 .HasAnnotation("Relational:MaxIdentifierLength", 128);
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
-
-            modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Asset", b =>
-                {
-                    b.Property<decimal>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("decimal(20,0)");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<decimal>("Id"));
-
-                    b.Property<string>("Name")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.Property<decimal?>("ProductId")
-                        .HasColumnType("decimal(20,0)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("ProductId");
-
-                    b.ToTable("Assets");
-                });
 
             modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Manufacturer", b =>
                 {
@@ -86,15 +67,6 @@ namespace ArcsomAssetManagement.Client.Migrations
                     b.HasIndex("ManufacturerId");
 
                     b.ToTable("Products");
-                });
-
-            modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Asset", b =>
-                {
-                    b.HasOne("ArcsomAssetManagement.Api.Models.Product", "Product")
-                        .WithMany()
-                        .HasForeignKey("ProductId");
-
-                    b.Navigation("Product");
                 });
 
             modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Product", b =>
