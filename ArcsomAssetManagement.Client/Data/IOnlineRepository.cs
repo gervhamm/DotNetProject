@@ -1,6 +1,4 @@
-﻿using System.Collections.Generic;
-
-namespace ArcsomAssetManagement.Client.Data;
+﻿namespace ArcsomAssetManagement.Client.Data;
 
 public interface IOnlineRepository<T> where T : class, new()
 {

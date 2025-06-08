@@ -9,7 +9,6 @@ public class SeedDataService
     private readonly ProductRepository _productRepository;
     private readonly ManufacturerRepository _manufacturerRepository;
 
-    private readonly ProjectRepository _projectRepository;
     private readonly string _seedDataFilePath = "SeedData.json";
     private readonly ILogger<SeedDataService> _logger;
 
@@ -84,8 +83,8 @@ public class SeedDataService
     {
         try
         {
-            await Task.WhenAll(
-                _projectRepository.DropTableAsync());
+            //await Task.WhenAll(
+            //    _projectRepository.DropTableAsync());
         }
         catch (Exception e)
         {

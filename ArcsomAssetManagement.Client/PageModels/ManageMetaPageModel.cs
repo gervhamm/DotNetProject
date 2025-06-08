@@ -2,7 +2,6 @@ using ArcsomAssetManagement.Client.DTOs.Business;
 using ArcsomAssetManagement.Client.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 //TODO: Rename "Meta"
@@ -16,12 +15,6 @@ public partial class ManageMetaPageModel : ObservableObject
     [ObservableProperty]
     private string _isOnlineColor = string.Empty;
 
-    [ObservableProperty]
-    private ObservableCollection<Category> _categories = [];
-
-    [ObservableProperty]
-    private ObservableCollection<Tag> _tags = [];
-
     public ManageMetaPageModel(ConnectivityService connectivityService, SeedDataService seedDataService, ModalErrorHandler errorHandler, SyncService<Manufacturer, ManufacturerDto> syncService)
     {
         _connectivity = connectivityService;
@@ -30,14 +23,11 @@ public partial class ManageMetaPageModel : ObservableObject
         _manufacturerSyncService = syncService;
     }
 
-
     [RelayCommand]
     private async Task Appearing()
     {
         await LoadData();
-    }
-
-   
+    }   
 
     [RelayCommand]
     private async Task Reset()

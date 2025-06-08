@@ -1,5 +1,4 @@
 ﻿using ArcsomAssetManagement.Client.Models;
-using System.Windows.Input;
 
 namespace ArcsomAssetManagement.Client.PageModels.Helpers;
 

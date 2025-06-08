@@ -57,8 +57,8 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
 
             var loginDto = new LoginDto
             {
-                Email = Email,
-                Password = Password
+                Email = email,
+                Password = password
             };
 
             var json = JsonConvert.SerializeObject(loginDto);

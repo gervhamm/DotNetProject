@@ -17,5 +17,10 @@ public class MappingProfile : Profile
             .ForMember(dest => dest.ManufacturerDto, opt => opt.MapFrom(src => src.Manufacturer));
         CreateMap<ProductDto, Product>()
             .ForMember(dest => dest.Manufacturer, opt => opt.MapFrom(src => src.ManufacturerDto));
+
+        CreateMap<Asset, AssetDto>()
+            .ForMember(dest => dest.ProductDto, opt => opt.MapFrom(src => src.Product));
+        CreateMap<AssetDto, Asset>()
+            .ForMember(dest => dest.Product, opt => opt.MapFrom(src => src.ProductDto));
     }
 }

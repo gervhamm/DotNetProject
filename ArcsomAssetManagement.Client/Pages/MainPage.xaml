@@ -60,6 +60,7 @@
 
         <Button Text="Login" 
                Command="{Binding LoginCommand}"
+               CommandParameter="{Binding Source={x:Reference EmailEntry}, Path=Text}"
                MaximumWidthRequest="{StaticResource MaximumWidth}"
                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
         

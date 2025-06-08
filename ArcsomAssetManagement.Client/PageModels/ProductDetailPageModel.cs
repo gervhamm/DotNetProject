@@ -3,7 +3,6 @@ using CommunityToolkit.Maui.Core.Extensions;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
-using System.Threading.Tasks;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
