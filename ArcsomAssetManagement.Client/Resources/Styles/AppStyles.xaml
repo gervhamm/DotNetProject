@@ -50,6 +50,47 @@
         <OnIdiom.Desktop>15</OnIdiom.Desktop>
     </OnIdiom>
 
+    <FontImageSource x:Key="IconSort"
+                     Glyph="{x:Static f:FluentUI.arrow_sort_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconAssets"
+                     Glyph="{x:Static f:FluentUI.tag_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconProducts"
+                     Glyph="{x:Static f:FluentUI.hard_drive_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconManufacturers"
+                     Glyph="{x:Static f:FluentUI.building_factory_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconSync"
+                     Glyph="{x:Static f:FluentUI.arrow_sync_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconReset"
+                     Glyph="{x:Static f:FluentUI.arrow_reset_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconConnected"
+                     Glyph="{x:Static f:FluentUI.connector_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Size="{StaticResource IconSize}" />
+
     <FontImageSource x:Key="IconDashboard"
                      Glyph="{x:Static f:FluentUI.diagram_24_regular}"
                      FontFamily="{x:Static f:FluentUI.FontFamily}"

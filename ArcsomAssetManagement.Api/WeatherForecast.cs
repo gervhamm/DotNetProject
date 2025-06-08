@@ -1,4 +1,4 @@
-namespace ArcsomAssetManagement.Api
+namespace ArcsomAssetManagement.Client
 {
     public class WeatherForecast
     {

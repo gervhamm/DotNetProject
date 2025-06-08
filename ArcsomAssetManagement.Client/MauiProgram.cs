@@ -1,6 +1,11 @@
 ﻿using CommunityToolkit.Maui;
 using Microsoft.Extensions.Logging;
 using Syncfusion.Maui.Toolkit.Hosting;
+using SQLite;
+using ArcsomAssetManagement.Client.DTOs.Mapping;
+using ArcsomAssetManagement.Client.Models;
+using ArcsomAssetManagement.Client.DTOs.Business;
+using AutoMapper;
 
 namespace ArcsomAssetManagement.Client
 {
@@ -25,22 +30,50 @@ namespace ArcsomAssetManagement.Client
                 });
 
 #if DEBUG
-    		builder.Logging.AddDebug();
-    		builder.Services.AddLogging(configure => configure.AddDebug());
+            builder.Logging.AddDebug();
+            builder.Services.AddLogging(configure => configure.AddDebug());
 #endif
+            builder.Services.AddAutoMapper(typeof(MappingProfile));
 
-            builder.Services.AddSingleton<ProjectRepository>();
-            builder.Services.AddSingleton<TaskRepository>();
-            builder.Services.AddSingleton<CategoryRepository>();
-            builder.Services.AddSingleton<TagRepository>();
-            builder.Services.AddSingleton<SeedDataService>();
-            builder.Services.AddSingleton<ModalErrorHandler>();
+            // Pages
             builder.Services.AddSingleton<MainPageModel>();
-            builder.Services.AddSingleton<ProjectListPageModel>();
+            builder.Services.AddSingleton<ProductListPageModel>();
+            builder.Services.AddSingleton<ManufacturerListPageModel>();
+            builder.Services.AddSingleton<AssetListPageModel>();
+            builder.Services.AddTransientWithShellRoute<ManufacturerDetailPage, ManufacturerDetailPageModel>("manufacturer");
+            builder.Services.AddTransientWithShellRoute<ProductDetailPage, ProductDetailPageModel>("product");
             builder.Services.AddSingleton<ManageMetaPageModel>();
 
-            builder.Services.AddTransientWithShellRoute<ProjectDetailPage, ProjectDetailPageModel>("project");
-            builder.Services.AddTransientWithShellRoute<TaskDetailPage, TaskDetailPageModel>("task");
+            // Services
+            //builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
+            //{
+            //    var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+            //    var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
+            //    var mapper = provider.GetRequiredService<IMapper>();
+
+            //    return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
+            //});
+            builder.Services.AddSingleton<SeedDataService>();
+            builder.Services.AddSingleton<ConnectivityService>();
+            builder.Services.AddSingleton<ModalErrorHandler>();
+
+            builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
+            {
+                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+                var onlineRepository = provider.GetRequiredService<ManufacturerRepository>();
+                var mapper = provider.GetRequiredService<IMapper>();
+                return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
+            });
+
+            // Repositories
+            builder.Services.AddTransient<SQLiteAsyncConnection>(provider =>
+            {
+                return new SQLiteAsyncConnection(Constants.DatabasePath);
+            });
+
+            builder.Services.AddHttpClient();
+            builder.Services.AddSingleton<ManufacturerRepository>();
+            builder.Services.AddSingleton<ProductRepository>();
 
             return builder.Build();
         }

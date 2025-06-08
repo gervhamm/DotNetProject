@@ -15,13 +15,25 @@
         Route="main" />
 
     <ShellContent
-        Title="Projects"
-        Icon="{StaticResource IconProjects}"
-        ContentTemplate="{DataTemplate pages:ProjectListPage}"
-        Route="projects" />
+        Title="Assets"
+        Icon="{StaticResource IconAssets}"
+        ContentTemplate="{DataTemplate pages:AssetListPage}"
+        Route="assets" />
 
     <ShellContent
-        Title="Manage Meta"
+        Title="Products"
+        Icon="{StaticResource IconProducts}"
+        ContentTemplate="{DataTemplate pages:ProductListPage}"
+        Route="products" />
+
+    <ShellContent
+        Title="Manufacturers"
+        Icon="{StaticResource IconManufacturers}"
+        ContentTemplate="{DataTemplate pages:ManufacturerListPage}"
+        Route="manufacturers" />
+
+    <ShellContent
+        Title="Manage App"
         Icon="{StaticResource IconMeta}"
         ContentTemplate="{DataTemplate pages:ManageMetaPage}"
         Route="manage" />

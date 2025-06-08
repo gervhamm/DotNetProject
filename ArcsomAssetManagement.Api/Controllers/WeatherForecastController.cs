@@ -1,6 +1,6 @@
 using Microsoft.AspNetCore.Mvc;
 
-namespace ArcsomAssetManagement.Api.Controllers
+namespace ArcsomAssetManagement.Client.Controllers
 {
     [ApiController]
     [Route("[controller]")]

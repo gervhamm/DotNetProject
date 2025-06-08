@@ -1,106 +1,83 @@
-using ArcsomAssetManagement.Client.Data;
+using ArcsomAssetManagement.Client.DTOs.Business;
 using ArcsomAssetManagement.Client.Models;
-using ArcsomAssetManagement.Client.Services;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
 using System.Collections.ObjectModel;
 
-namespace ArcsomAssetManagement.Client.PageModels
+namespace ArcsomAssetManagement.Client.PageModels;
+//TODO: Rename "Meta"
+public partial class ManageMetaPageModel : ObservableObject
 {
-    public partial class ManageMetaPageModel : ObservableObject
+    private readonly SeedDataService _seedDataService;
+    private readonly ConnectivityService _connectivity;
+    private readonly ModalErrorHandler _errorHandler;
+    private readonly SyncService<Manufacturer, ManufacturerDto> _manufacturerSyncService;
+
+    [ObservableProperty]
+    private string _isOnlineColor = string.Empty;
+
+    [ObservableProperty]
+    private ObservableCollection<Category> _categories = [];
+
+    [ObservableProperty]
+    private ObservableCollection<Tag> _tags = [];
+
+    public ManageMetaPageModel(ConnectivityService connectivityService, SeedDataService seedDataService, ModalErrorHandler errorHandler, SyncService<Manufacturer, ManufacturerDto> syncService)
     {
-        private readonly CategoryRepository _categoryRepository;
-        private readonly TagRepository _tagRepository;
-        private readonly SeedDataService _seedDataService;
+        _connectivity = connectivityService;
+        _seedDataService = seedDataService;
+        _errorHandler = errorHandler;
+        _manufacturerSyncService = syncService;
+    }
 
-        [ObservableProperty]
-        private ObservableCollection<Category> _categories = [];
 
-        [ObservableProperty]
-        private ObservableCollection<Tag> _tags = [];
+    [RelayCommand]
+    private async Task Appearing()
+    {
+        await LoadData();
+    }
 
-        public ManageMetaPageModel(CategoryRepository categoryRepository, TagRepository tagRepository, SeedDataService seedDataService)
+   
+
+    [RelayCommand]
+    private async Task Reset()
+    {
+        Preferences.Default.Remove("is_seeded");
+        await _seedDataService.LoadSeedDataAsync();
+        Preferences.Default.Set("is_seeded", true);
+        await Shell.Current.GoToAsync("//main");
+    }
+
+    [RelayCommand]
+    private async Task SyncAll()
+    {
+        try
         {
-            _categoryRepository = categoryRepository;
-            _tagRepository = tagRepository;
-            _seedDataService = seedDataService;
+            await _manufacturerSyncService.ProcessSyncQueueAsync();
+            await _manufacturerSyncService.PullLatestRemoteChanges();
         }
-
-        private async Task LoadData()
+        catch (Exception e)
         {
-            var categoriesList = await _categoryRepository.ListAsync();
-            Categories = new ObservableCollection<Category>(categoriesList);
-            var tagsList = await _tagRepository.ListAsync();
-            Tags = new ObservableCollection<Tag>(tagsList);
+            _errorHandler.HandleError(e);
         }
+    }
 
-        [RelayCommand]
-        private Task Appearing()
-            => LoadData();
+    [RelayCommand]
+    private async Task ToggleOnline()
+    {
+        _connectivity.IsOnline = !_connectivity.IsOnline;
+        IsOnlineColor = _connectivity.IsOnline ? "Green" : "Red";
+    }
 
-        [RelayCommand]
-        private async Task SaveCategories()
+    private async Task LoadData()
+    {
+        try
         {
-            foreach (var category in Categories)
-            {
-                await _categoryRepository.SaveItemAsync(category);
-            }
-
-            await AppShell.DisplayToastAsync("Categories saved");
+            IsOnlineColor = _connectivity.IsOnline ? "Green" : "Red";
         }
-
-        [RelayCommand]
-        private async Task DeleteCategory(Category category)
+        catch (Exception e)
         {
-            Categories.Remove(category);
-            await _categoryRepository.DeleteItemAsync(category);
-            await AppShell.DisplayToastAsync("Category deleted");
-        }
-
-        [RelayCommand]
-        private async Task AddCategory()
-        {
-            var category = new Category();
-            Categories.Add(category);
-            await _categoryRepository.SaveItemAsync(category);
-            await AppShell.DisplayToastAsync("Category added");
-        }
-
-        [RelayCommand]
-        private async Task SaveTags()
-        {
-            foreach (var tag in Tags)
-            {
-                await _tagRepository.SaveItemAsync(tag);
-            }
-
-            await AppShell.DisplayToastAsync("Tags saved");
-        }
-
-        [RelayCommand]
-        private async Task DeleteTag(Tag tag)
-        {
-            Tags.Remove(tag);
-            await _tagRepository.DeleteItemAsync(tag);
-            await AppShell.DisplayToastAsync("Tag deleted");
-        }
-
-        [RelayCommand]
-        private async Task AddTag()
-        {
-            var tag = new Tag();
-            Tags.Add(tag);
-            await _tagRepository.SaveItemAsync(tag);
-            await AppShell.DisplayToastAsync("Tag added");
-        }
-
-        [RelayCommand]
-        private async Task Reset()
-        {
-            Preferences.Default.Remove("is_seeded");
-            await _seedDataService.LoadSeedDataAsync();
-            Preferences.Default.Set("is_seeded", true);
-            await Shell.Current.GoToAsync("//main");
+            _errorHandler.HandleError(e);
         }
     }
 }
