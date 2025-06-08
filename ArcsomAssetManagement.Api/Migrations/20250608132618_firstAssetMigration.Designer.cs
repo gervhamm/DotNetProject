@@ -11,8 +11,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace ArcsomAssetManagement.Client.Migrations
 {
     [DbContext(typeof(ApplicationDbContext))]
-    [Migration("20250504084921_InitialCreate")]
-    partial class InitialCreate
+    [Migration("20250608132618_firstAssetMigration")]
+    partial class firstAssetMigration
     {
         /// <inheritdoc />
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -24,7 +24,7 @@ namespace ArcsomAssetManagement.Client.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
-            modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Manufacturer", b =>
+            modelBuilder.Entity("ArcsomAssetManagement.Client.Models.Manufacturer", b =>
                 {
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
@@ -37,14 +37,17 @@ namespace ArcsomAssetManagement.Client.Migrations
 
                     b.Property<string>("Name")
                         .IsRequired()
-                        .HasColumnType("nvarchar(max)");
+                        .HasColumnType("nvarchar(450)");
 
                     b.HasKey("Id");
 
-                    b.ToTable("Manufacturer");
+                    b.HasIndex("Name")
+                        .IsUnique();
+
+                    b.ToTable("Manufacturers");
                 });
 
-            modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Product", b =>
+            modelBuilder.Entity("ArcsomAssetManagement.Client.Models.Product", b =>
                 {
                     b.Property<decimal>("Id")
                         .ValueGeneratedOnAdd()
@@ -66,16 +69,16 @@ namespace ArcsomAssetManagement.Client.Migrations
                     b.ToTable("Products");
                 });
 
-            modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Product", b =>
+            modelBuilder.Entity("ArcsomAssetManagement.Client.Models.Product", b =>
                 {
-                    b.HasOne("ArcsomAssetManagement.Api.Models.Manufacturer", "Manufacturer")
+                    b.HasOne("ArcsomAssetManagement.Client.Models.Manufacturer", "Manufacturer")
                         .WithMany("Products")
                         .HasForeignKey("ManufacturerId");
 
                     b.Navigation("Manufacturer");
                 });
 
-            modelBuilder.Entity("ArcsomAssetManagement.Api.Models.Manufacturer", b =>
+            modelBuilder.Entity("ArcsomAssetManagement.Client.Models.Manufacturer", b =>
                 {
                     b.Navigation("Products");
                 });

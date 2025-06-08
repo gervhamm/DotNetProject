@@ -1,8 +1,6 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using Microsoft.EntityFrameworkCore;
-using System.ComponentModel.DataAnnotations;
+﻿using Microsoft.EntityFrameworkCore;
 
-namespace ArcsomAssetManagement.Client.Models;
+namespace ArcsomAssetManagement.Api.Models;
 
 [Index(nameof(Name), IsUnique = true)]
 public class Manufacturer

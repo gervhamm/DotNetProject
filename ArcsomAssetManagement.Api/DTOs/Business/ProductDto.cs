@@ -1,4 +1,4 @@
-﻿namespace ArcsomAssetManagement.Client.DTOs.Business;
+﻿namespace ArcsomAssetManagement.Api.DTOs.Business;
 
 public class ProductDto
 {

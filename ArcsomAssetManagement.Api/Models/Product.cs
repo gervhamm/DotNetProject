@@ -1,7 +1,4 @@
-﻿using System.ComponentModel.DataAnnotations;
-using System.Resources;
-
-namespace ArcsomAssetManagement.Client.Models;
+﻿namespace ArcsomAssetManagement.Api.Models;
 
 public class Product
 {
