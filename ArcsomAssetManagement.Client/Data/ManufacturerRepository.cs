@@ -2,7 +2,6 @@
 using ArcsomAssetManagement.Client.Models;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
-using Microsoft.Maui.Graphics.Text;
 using SQLite;
 using System.Net.Http.Json;
 using System.Text.Json;
@@ -98,7 +97,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
         }
     }
 
-    public async Task<(List<Manufacturer>, PaginationModel)> ListAsync(int pageNumber = 1, int pageSize = 3, string filter = null)
+    public async Task<(List<Manufacturer>, PaginationModel)> ListAsync(int pageNumber = 1, int pageSize = 3, string filter = null, bool desc = false)
     {
 
         var pagination = new PaginationModel
@@ -108,7 +107,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
             TotalItems = pageSize
         };
 
-        var apiUrlPaged = _apiUrl + $"/Paged?pageNumber={pageNumber}&pageSize={pageSize}";
+        var apiUrlPaged = _apiUrl + $"/Paged?pageNumber={pageNumber}&pageSize={pageSize}&filter={filter}&desc={desc}";
 
         if (await IsOnlineAsync())
         {
@@ -138,11 +137,11 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
             var totalItems = await _database.Table<Manufacturer>().CountAsync();
 
             AsyncTableQuery<Manufacturer> query = _database.Table<Manufacturer>();
-            if (filter != null)
+            if (!string.IsNullOrWhiteSpace(filter))
             {
-                filter = filter.ToLower();
-                query = query.Where(p => p.Name.ToLower().Contains(filter) ||
-                                              p.Contact.ToLower().Contains(filter));
+                filter = filter.Trim().ToLowerInvariant();
+                query = query.Where(p => p.Name.Contains(filter) ||
+                                              p.Contact.Contains(filter));
             }
             var manufacturers = await query
                 .Skip((pageNumber - 1) * pageSize)
@@ -168,10 +167,12 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
             if (await IsOnlineAsync())
             {
                 await SaveItemOnlineAsync(dto);
+                await _database.InsertAsync(item);
                 return item.Id;
+
             }
 
-            await _database.InsertAsync(item);
+            await _database.InsertAsync(item); 
 
             if (trackSync)
             {
@@ -191,6 +192,8 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
             if (await IsOnlineAsync())
             {
                 await UpdateItemOnlineAsync(dto);
+                var updatedRows = await _database.UpdateAsync(item);
+                if (updatedRows == 0) await _database.InsertOrReplaceAsync(item);
                 return item.Id;
             }
             var result = await _database.UpdateAsync(item);

@@ -49,7 +49,19 @@
              Default="5">
         <OnIdiom.Desktop>15</OnIdiom.Desktop>
     </OnIdiom>
-    
+
+    <FontImageSource x:Key="IconSort"
+                     Glyph="{x:Static f:FluentUI.arrow_sort_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
+    <FontImageSource x:Key="IconAssets"
+                     Glyph="{x:Static f:FluentUI.tag_24_regular}"
+                     FontFamily="{x:Static f:FluentUI.FontFamily}"
+                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
+                     Size="{StaticResource IconSize}" />
+
     <FontImageSource x:Key="IconProducts"
                      Glyph="{x:Static f:FluentUI.hard_drive_24_regular}"
                      FontFamily="{x:Static f:FluentUI.FontFamily}"

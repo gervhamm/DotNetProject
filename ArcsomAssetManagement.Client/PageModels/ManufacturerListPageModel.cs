@@ -9,8 +9,7 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class ManufacturerListPageModel : ObservableObject
 {
     private readonly ManufacturerRepository _manufacturerRepository;
-    // private readonly SyncService<Manufacturer,ManufacturerDto> _syncService;
-
+ 
     [ObservableProperty]
     private string searchText = string.Empty;
 
@@ -22,19 +21,20 @@ public partial class ManufacturerListPageModel : ObservableObject
     private List<Manufacturer> _manufacturers = [];
 
     [ObservableProperty]
-    private PaginationModel pagination;
+    private PaginationModel _pagination;
 
     [ObservableProperty]
     private List<PageNumberItem> _pageNumbers = [];
 
+    private bool _orderByDescending = false;
+
     [ObservableProperty]
     private int selectedPage;
 
-    public ManufacturerListPageModel(ManufacturerRepository manufacturerRepository)//, SyncService<Manufacturer, ManufacturerDto> syncService)
+    public ManufacturerListPageModel(ManufacturerRepository manufacturerRepository)
     {
         _manufacturerRepository = manufacturerRepository;
-        //_syncService = syncService;
-        pagination = new PaginationModel
+        _pagination = new PaginationModel
         {
             CurrentPage = 1,
             PageSize = 3,
@@ -47,9 +47,9 @@ public partial class ManufacturerListPageModel : ObservableObject
     [RelayCommand]
     private async Task Appearing()
     {
-        (Manufacturers, pagination) = await _manufacturerRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize);
+        (Manufacturers, _pagination) = await _manufacturerRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize, "", _orderByDescending);
         FilteredManufacturers = Manufacturers;
-        PageNumbers = PaginationHelper.SetPagenumbers(pagination.CurrentPage, pagination.TotalPages);
+        PageNumbers = PaginationHelper.SetPagenumbers(_pagination.CurrentPage, _pagination.TotalPages);
     }
 
     [RelayCommand]
@@ -70,7 +70,7 @@ public partial class ManufacturerListPageModel : ObservableObject
         }
         else
         {
-            (List<Manufacturer> filtered, pagination) = await _manufacturerRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize, filter: SearchText);
+            (List<Manufacturer> filtered, _pagination) = await _manufacturerRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize, filter: SearchText, _orderByDescending);
 
             FilteredManufacturers = filtered;
         }
@@ -78,7 +78,7 @@ public partial class ManufacturerListPageModel : ObservableObject
     [RelayCommand]
     private async Task GoToPageAsync(string pageNumber)
     {
-        var newPageNumber = pagination.CurrentPage;
+        var newPageNumber = _pagination.CurrentPage;
 
         switch (pageNumber)
         {
@@ -105,11 +105,10 @@ public partial class ManufacturerListPageModel : ObservableObject
         Pagination.CurrentPage = newPageNumber;
         Appearing();
     }
-
     [RelayCommand]
-    private async Task SyncManufacturers()
+    private async Task SortNameAsync()
     {
-        //await _syncService.ProcessSyncQueueAsync();
-        await Appearing();
+        _orderByDescending = !_orderByDescending;
+        Appearing();
     }
 }

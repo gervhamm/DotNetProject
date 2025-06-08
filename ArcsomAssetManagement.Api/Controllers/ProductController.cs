@@ -19,6 +19,46 @@ public class ProductController : ControllerBase
         _logger = logger;
     }
 
+    [HttpGet("Paged")]
+    public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 3, string filter = "")
+    {
+        var source = new CancellationTokenSource();
+        source.CancelAfter(TimeSpan.FromSeconds(10));
+        var stoppingToken = source.Token;
+
+        filter = filter.Trim().ToLowerInvariant();
+
+        var products = await _context.Products.AsNoTracking()
+            .Include(p => p.Manufacturer)
+            .Select(p => new ProductDto
+            {
+                Id = p.Id,
+                Name = p.Name,
+                ManufacturerDto = new ManufacturerDto
+                {
+                    Id = p.Manufacturer.Id,
+                    Name = p.Manufacturer.Name,
+                    Contact = p.Manufacturer.Contact,
+                }
+            })
+            .Where(p => string.IsNullOrEmpty(filter) ||
+                p.Name.Contains(filter))
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
+            .ToListAsync(stoppingToken);
+
+        var totalProducts = await _context.Products.CountAsync(stoppingToken);
+
+        if (products == null)
+        {
+            return NotFound("Not Found");
+        }
+
+        Response.Headers.Add("X-Total-Count", totalProducts.ToString());
+
+        return Ok(products);
+    }
+
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -38,8 +78,6 @@ public class ProductController : ControllerBase
                     Name = p.Manufacturer.Name,
                     Contact = p.Manufacturer.Contact,
                 }
-
-
             })
             .ToListAsync(stoppingToken);
         if (products == null)

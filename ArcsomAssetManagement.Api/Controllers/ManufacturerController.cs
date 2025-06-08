@@ -22,15 +22,26 @@ public class ManufacturerController : ControllerBase
     }
 
     [HttpGet("Paged")]
-    public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 3)
+    public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 3, string filter = "", bool desc = false)
     {
         var source = new CancellationTokenSource();
         source.CancelAfter(TimeSpan.FromSeconds(10));
         var stoppingToken = source.Token;
 
-        var manufacturers = await _context.Manufacturers.AsNoTracking()
-            .Skip((pageNumber - 1)* pageSize)
-            .Take(pageSize)
+        filter = filter.Trim().ToLowerInvariant();
+
+        var manufacturersQuery = _context.Manufacturers.AsNoTracking();
+
+        if (!string.IsNullOrEmpty(filter))
+        {
+            manufacturersQuery = manufacturersQuery.Where(p =>
+                p.Name.Contains(filter) ||
+                p.Contact.Contains(filter));
+        }
+
+        manufacturersQuery = desc ? manufacturersQuery.OrderByDescending(p => p.Name) : manufacturersQuery.OrderBy(p => p.Name);
+
+        var manufacturers = await manufacturersQuery
             .Select(p => new ManufacturerDto
             {
                 Id = p.Id,
@@ -38,6 +49,8 @@ public class ManufacturerController : ControllerBase
                 Contact = p.Contact,
                 ProductDtos = null
             })
+            .Skip((pageNumber - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync(stoppingToken);
 
         var totalManufacturers = await _context.Manufacturers.CountAsync(stoppingToken);

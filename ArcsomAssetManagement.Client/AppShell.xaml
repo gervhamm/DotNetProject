@@ -15,6 +15,12 @@
         Route="main" />
 
     <ShellContent
+        Title="Assets"
+        Icon="{StaticResource IconAssets}"
+        ContentTemplate="{DataTemplate pages:AssetListPage}"
+        Route="assets" />
+
+    <ShellContent
         Title="Products"
         Icon="{StaticResource IconProducts}"
         ContentTemplate="{DataTemplate pages:ProductListPage}"
@@ -27,17 +33,11 @@
         Route="manufacturers" />
 
     <ShellContent
-        Title="Projects"
-        Icon="{StaticResource IconProjects}"
-        ContentTemplate="{DataTemplate pages:ProjectListPage}"
-        Route="projects" />
-    
-    <ShellContent
-        Title="Manage Meta"
+        Title="Manage App"
         Icon="{StaticResource IconMeta}"
         ContentTemplate="{DataTemplate pages:ManageMetaPage}"
         Route="manage" />
-    <!--
+
     <Shell.FlyoutFooter>
         <Grid Padding="15">
             <sf:SfSegmentedControl x:Name="ThemeSegmentedControl" 
@@ -52,5 +52,5 @@
             </sf:SfSegmentedControl>
         </Grid>
     </Shell.FlyoutFooter>
--->
+
 </Shell>

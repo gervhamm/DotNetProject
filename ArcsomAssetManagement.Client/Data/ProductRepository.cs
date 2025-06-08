@@ -8,7 +8,7 @@ using System.Text.Json;
 
 namespace ArcsomAssetManagement.Client.Data;
 
-public class ProductRepository
+public class ProductRepository : IOnlineRepository<ProductDto>
 {
     private readonly ILogger<ProductRepository> _logger;
     private SQLiteAsyncConnection? _database;
@@ -105,6 +105,64 @@ public class ProductRepository
         }
     }
 
+    public async Task<(List<Product>, PaginationModel)> ListAsync(int pageNumber = 1, int pageSize = 3, string filter = "")
+    {
+        var pagination = new PaginationModel
+        {
+            CurrentPage = pageNumber,
+            PageSize = pageSize,
+            TotalItems = pageSize
+        };
+
+        var apiUrlPaged = $"{_apiUrl}/Paged?pageNumber={pageNumber}&pageSize={pageSize}&filter={filter}";
+
+        if (await IsOnlineAsync())
+        {
+            try
+            {
+                var response = await _httpClient.GetAsync(apiUrlPaged);
+                if (response.IsSuccessStatusCode)
+                {
+                    var dtos = await response.Content.ReadFromJsonAsync<IEnumerable<ProductDto>>();
+                    var domainItems = _mapper.Map<List<Product>>(dtos ?? new List<ProductDto>());
+                    pagination.TotalItems = int.Parse(response.Headers.GetValues("X-Total-Count").FirstOrDefault() ?? "0");
+                    return (domainItems, pagination);
+                }
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Failed to list products online.");
+                return (new List<Product>(), pagination);
+            }
+        }
+
+        try
+        {
+            var totalItems = await _database.Table<Product>().CountAsync();
+
+            AsyncTableQuery<Product> query = _database.Table<Product>();
+            if (!string.IsNullOrWhiteSpace(filter))
+            {
+                filter = filter.Trim().ToLowerInvariant();
+                query = query.Where(p => p.Name.Contains(filter) ||
+                                            p.Manufacturer.Name.Contains(filter));
+            }
+
+            var products = await query
+                .Skip((pageNumber - 1) * pageSize)
+                .Take(pageSize)
+                .ToListAsync();
+
+            pagination.TotalItems = totalItems;
+
+            return (products, pagination);
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Error listing products from database");
+            return (new List<Product>(), pagination);
+        }
+    }
     public async Task<ulong> SaveItemAsync(Product item, bool trackSync)
     {
         ProductDto dto = _mapper.Map<ProductDto>(item);
@@ -112,11 +170,8 @@ public class ProductRepository
         {
             if (await IsOnlineAsync())
             {
-                var response = await _httpClient.PostAsJsonAsync($"{_apiUrl}", dto);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Error while updating item: {response.StatusCode}");
-                }
+                await SaveItemOnlineAsync(dto);
+                await _database.InsertAsync(item);
                 return item.Id;
             }
 
@@ -139,11 +194,9 @@ public class ProductRepository
 
             if (await IsOnlineAsync())
             {
-                var response = await _httpClient.PatchAsJsonAsync($"{_apiUrl}/{item.Id}", dto);
-                if (!response.IsSuccessStatusCode)
-                {
-                    throw new Exception($"Error while updating item: {response.StatusCode}");
-                }
+                await UpdateItemOnlineAsync(dto);
+                var updatedRows = await _database.UpdateAsync(item);
+                if (updatedRows == 0) await _database.InsertOrReplaceAsync(item);
                 return item.Id;
             }
             var result = await _database.UpdateAsync(item);
@@ -168,8 +221,8 @@ public class ProductRepository
         {
             try
             {
-                var response = await _httpClient.DeleteAsync($"{_apiUrl}/{item.Id}");
-                if (response.IsSuccessStatusCode)
+                var isDeletedOnline = await DeleteItemOnlineAsync(item.Id);
+                if (isDeletedOnline)
                 {
                     await _database.DeleteAsync(item);
                     return 1;
@@ -205,6 +258,77 @@ public class ProductRepository
         catch
         {
             return false;
+        }
+    }
+
+    public async Task<IEnumerable<ProductDto>> ListOnlineAsync()
+    {
+        try
+        {
+            var response = await _httpClient.GetAsync(_apiUrl);
+            if (response.IsSuccessStatusCode)
+            {
+                var dtos = await response.Content.ReadFromJsonAsync<IEnumerable<ProductDto>>();
+                return dtos;
+            }
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to list manufacturers online.");
+            return new List<ProductDto>();
+        }
+
+        return new List<ProductDto>();
+    }
+
+    public async Task SaveItemOnlineAsync(ProductDto dto)
+    {
+        var response = await _httpClient.PostAsJsonAsync($"{_apiUrl}", dto);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error while saving item: {response.StatusCode}");
+        }
+    }
+
+    public async Task UpdateItemOnlineAsync(ProductDto dto)
+    {
+        var response = await _httpClient.PatchAsJsonAsync($"{_apiUrl}/{dto.Id}", dto);
+        if (!response.IsSuccessStatusCode)
+        {
+            throw new Exception($"Error while updating item: {response.StatusCode}");
+        }
+    }
+    public async Task<bool> DeleteItemOnlineAsync(ulong id)
+    {
+        var response = await _httpClient.DeleteAsync($"{_apiUrl}/{id}");
+        return response.IsSuccessStatusCode;
+    }
+
+    public async Task SaveToOfflineAsync(IEnumerable<ProductDto> items)
+    {
+        var domainItems = _mapper.Map<List<Product>>(items ?? new List<ProductDto>());
+
+        foreach (var item in domainItems)
+        {
+            await _database.InsertAsync(item);
+
+            //var existing = await _database.FindAsync<Product>(item.Id);
+
+            //if (existing == null)
+            //{
+            //    try
+            //    {
+            //        var response = await _database.InsertAsync(item);
+            //    }
+            //    catch (SQLiteException ex)
+            //    {
+            //        _logger.LogInformation(ex, $"Failed to insert product online. Delete the offline product.{item.Name}");
+            //    }
+            //}
+            //else
+            //{
+            //    await _database.UpdateAsync(item);
+            //}
         }
     }
 }

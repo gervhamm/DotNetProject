@@ -42,6 +42,18 @@
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
+
+                <CollectionView ItemsSource="{Binding PageNumbers}" ItemsLayout="HorizontalList" HorizontalOptions="Center">
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate x:DataType="models:PageNumberItem">
+                            <Button Text="{Binding Number}" 
+                                Command="{Binding GoToPageCommand, Source={RelativeSource AncestorType={x:Type pageModels:ProductListPageModel}}, x:DataType=pageModels:ProductListPageModel}"
+                                CommandParameter="{Binding Number}">
+                            </Button>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+                
                 <controls:AddButton 
                     Command="{Binding AddProductCommand}" />
             </VerticalStackLayout>

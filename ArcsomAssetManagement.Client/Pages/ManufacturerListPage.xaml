@@ -29,21 +29,44 @@
 
                 <Button Text="Search" 
                     Command="{Binding FilterManufacturersCommand}"/>
-                <VerticalStackLayout 
+                <Grid Margin="1" ColumnSpacing="20">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="4*" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Label Grid.Column="0" Text="Name" Style="{StaticResource LargeTitle}" HorizontalTextAlignment="Start" />
+                    <ImageButton Grid.Column="1" Source="{StaticResource IconSort}" Background="Transparent" HorizontalOptions="End" Command="{Binding SortNameCommand}"/>
+                    <Label Grid.Column="2" Text="Contact" Style="{StaticResource LargeTitle}" HorizontalTextAlignment="Start"/>
+                </Grid>
+                
+                <VerticalStackLayout
                     Spacing="{StaticResource LayoutSpacing}"
                     BindableLayout.ItemsSource="{Binding FilteredManufacturers}">
                     <BindableLayout.ItemTemplate>
                         <DataTemplate x:DataType="models:Manufacturer">
-                            <Border>
-                                <VerticalStackLayout>
-                                    <Label Text="{Binding Name}" FontSize="18" />
-                                    <Label Text="{Binding Contact}" FontSize="14" TextColor="Gray" />
-                                </VerticalStackLayout>
-                                <Border.GestureRecognizers>
-                                    <TapGestureRecognizer Command="{Binding NavigateToManufacturerCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerListPageModel}}, x:DataType=pageModels:ManufacturerListPageModel}" 
+                            
+                            <Grid Margin="0" ColumnSpacing="20">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+                                <Border Grid.Column="0">
+                                    <Label Text="{Binding Name}" Style="{StaticResource GridLabel}" />
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding NavigateToManufacturerCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerListPageModel}}, x:DataType=pageModels:ManufacturerListPageModel}" 
                                                           CommandParameter="{Binding .}"/>
-                                </Border.GestureRecognizers>
-                            </Border>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                                <Border Grid.Column="1">
+                                    <Label Text="{Binding Contact}" Style="{StaticResource GridLabel}" />
+                                    <Border.GestureRecognizers>
+                                        <TapGestureRecognizer Command="{Binding NavigateToManufacturerCommand, Source={RelativeSource AncestorType={x:Type pageModels:ManufacturerListPageModel}}, x:DataType=pageModels:ManufacturerListPageModel}" 
+                                                          CommandParameter="{Binding .}"/>
+                                    </Border.GestureRecognizers>
+                                </Border>
+                            </Grid>
                         </DataTemplate>
                     </BindableLayout.ItemTemplate>
                 </VerticalStackLayout>
@@ -62,6 +85,7 @@
                 <controls:AddButton 
                     Command="{Binding AddManufacturerCommand}" />
             </VerticalStackLayout>
+
         </ScrollView>
     </Grid>
     
