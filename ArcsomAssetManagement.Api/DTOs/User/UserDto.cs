@@ -1,4 +1,4 @@
-﻿namespace ArcsomAssetManagement.Client.DTOs.User
+﻿namespace ArcsomAssetManagement.Api.DTOs.User
 {
     public class UserDto
     {
