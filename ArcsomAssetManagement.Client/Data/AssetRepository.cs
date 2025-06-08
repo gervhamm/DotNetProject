@@ -28,7 +28,8 @@ public class AssetRepository : IOnlineRepository<AssetDto>
 
     private async Task InitAsync()
     {
-        if (_database is not null)
+        var tables = _database.GetTableInfoAsync("Asset").Result;
+        if (_database is not null && tables.Count() > 0)
             return;
 
         _database = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);

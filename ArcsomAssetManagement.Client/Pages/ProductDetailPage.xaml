@@ -34,7 +34,6 @@
                     Hint="Manufacturer" >
                     <Picker
                        ItemsSource="{Binding Manufacturers}" 
-                       ItemDisplayBinding="{Binding Name}"  
                        SelectedItem="{Binding SelectedManufacturer, Mode=TwoWay}"
                        SelectedIndex="{Binding SelectedManufacturerIndex}"/>
                 </sf:SfTextInputLayout>

@@ -22,5 +22,4 @@ public partial class ManufacturerListPage : ContentPage
             viewModel.SearchText = searchText;
         }
     }
-
 }

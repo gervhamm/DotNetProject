@@ -84,8 +84,7 @@ public partial class AssetDetailPageModel : ObservableObject, IQueryAttributable
             {
                 SelectedProduct = Product;
                 SelectedProductIndex = Products.ToList().FindIndex(p => p.Id == Product.Id);
-            }
-            ;
+            };
         }
     }
 

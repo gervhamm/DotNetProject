@@ -28,7 +28,8 @@ public class ProductRepository : IOnlineRepository<ProductDto>
 
     private async Task InitAsync()
     {
-        if (_database is not null)
+        var tables = _database.GetTableInfoAsync("Product").Result;
+        if (_database is not null && tables.Count() > 0)
             return;
 
         _database = new SQLiteAsyncConnection(Constants.DatabasePath, Constants.Flags);

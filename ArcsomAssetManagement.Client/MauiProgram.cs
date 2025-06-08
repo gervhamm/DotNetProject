@@ -42,17 +42,10 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddSingleton<AssetListPageModel>();
             builder.Services.AddTransientWithShellRoute<ManufacturerDetailPage, ManufacturerDetailPageModel>("manufacturer");
             builder.Services.AddTransientWithShellRoute<ProductDetailPage, ProductDetailPageModel>("product");
+            builder.Services.AddTransientWithShellRoute<AssetDetailPage, AssetDetailPageModel>("asset");
             builder.Services.AddSingleton<ManageMetaPageModel>();
-
+            
             // Services
-            //builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
-            //{
-            //    var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
-            //    var onlineRepository = provider.GetRequiredService<ManufacturerOnlineRepository>();
-            //    var mapper = provider.GetRequiredService<IMapper>();
-
-            //    return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
-            //});
             builder.Services.AddSingleton<SeedDataService>();
             builder.Services.AddSingleton<ConnectivityService>();
             builder.Services.AddSingleton<ModalErrorHandler>();
@@ -74,6 +67,7 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddHttpClient();
             builder.Services.AddSingleton<ManufacturerRepository>();
             builder.Services.AddSingleton<ProductRepository>();
+            builder.Services.AddSingleton<AssetRepository>();
 
             return builder.Build();
         }

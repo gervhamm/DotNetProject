@@ -91,6 +91,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <MauiXaml Update="Pages\AssetDetailPage.xaml">
+	    <Generator>MSBuild:Compile</Generator>
+	  </MauiXaml>
 	  <MauiXaml Update="Pages\AssetListPage.xaml">
 	    <Generator>MSBuild:Compile</Generator>
 	  </MauiXaml>

@@ -84,8 +84,7 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
             {
                 SelectedManufacturer = Manufacturer;
                 SelectedManufacturerIndex = Manufacturers.ToList().FindIndex(p => p.Id == Manufacturer.Id);
-            }
-            ;
+            };
         }
     }
 

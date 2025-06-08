@@ -16,7 +16,6 @@
     </ContentPage.Behaviors>
 
     <ContentPage.ToolbarItems>
-        <ToolbarItem Text="Sync" Command="{Binding SyncManufacturersCommand}" />
     </ContentPage.ToolbarItems>
     <Grid>
         <ScrollView>
