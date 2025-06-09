@@ -40,7 +40,7 @@
         <Label Text="Email:" 
                Style="{StaticResource Body1}"
                 MaximumWidthRequest="{StaticResource MaximumWidth}"/>
-        <Entry Text="{Binding Email}" 
+        <Entry Text="{Binding Username}" 
                x:Name="EmailEntry"
                MaximumWidthRequest="{StaticResource MaximumWidth}"
                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
@@ -54,7 +54,7 @@
                MaximumWidthRequest="{StaticResource MaximumWidth}"
                IsEnabled="{Binding IsBusy, Converter={StaticResource InvertedBoolConverter}}"/>
         
-        <Label Text="{Binding Email}" 
+        <Label Text="{Binding Username}" 
                Style="{StaticResource Body1}"
                MaximumWidthRequest="{StaticResource MaximumWidth}"/>
 

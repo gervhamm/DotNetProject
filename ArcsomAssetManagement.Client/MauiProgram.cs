@@ -6,6 +6,9 @@ using ArcsomAssetManagement.Client.DTOs.Mapping;
 using ArcsomAssetManagement.Client.Models;
 using ArcsomAssetManagement.Client.DTOs.Business;
 using AutoMapper;
+using ArcsomAssetManagement.Client.Settings;
+using System.Text.Json;
+using Microsoft.Extensions.DependencyInjection;
 
 namespace ArcsomAssetManagement.Client
 {
@@ -29,6 +32,17 @@ namespace ArcsomAssetManagement.Client
                     fonts.AddFont("FluentSystemIcons-Regular.ttf", FluentUI.FontFamily);
                 });
 
+            using var stream = FileSystem.OpenAppPackageFileAsync("appsettings.json").Result;
+            using var reader = new StreamReader(stream);
+            var content = reader.ReadToEnd();
+            var jsonDoc = JsonDocument.Parse(content);
+
+            var apiSettings = JsonSerializer.Deserialize<ApiSettings>(
+                jsonDoc.RootElement.GetProperty("ApiSettings").GetRawText()
+            );
+
+            builder.Services.AddSingleton(apiSettings);
+
 #if DEBUG
             builder.Logging.AddDebug();
             builder.Services.AddLogging(configure => configure.AddDebug());
@@ -48,7 +62,8 @@ namespace ArcsomAssetManagement.Client
             // Services
             builder.Services.AddSingleton<SeedDataService>();
             builder.Services.AddSingleton<ConnectivityService>();
-            builder.Services.AddSingleton<ModalErrorHandler>();
+            builder.Services.AddSingleton<ModalErrorHandler>(); 
+            builder.Services.AddTransient<AuthHeaderHandler>();
 
             builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
             {
@@ -64,10 +79,16 @@ namespace ArcsomAssetManagement.Client
                 return new SQLiteAsyncConnection(Constants.DatabasePath);
             });
 
-            builder.Services.AddHttpClient();
+            builder.Services.AddHttpClient("AuthorizedClient", client =>
+            {
+                client.BaseAddress = new Uri(apiSettings.ApiUrl); 
+            })
+            .AddHttpMessageHandler<AuthHeaderHandler>();
+
             builder.Services.AddSingleton<ManufacturerRepository>();
             builder.Services.AddSingleton<ProductRepository>();
             builder.Services.AddSingleton<AssetRepository>();
+            builder.Services.AddSingleton<AuthRepository>();
 
             return builder.Build();
         }

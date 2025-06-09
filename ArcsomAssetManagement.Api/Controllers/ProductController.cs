@@ -1,6 +1,7 @@
 ﻿using ArcsomAssetManagement.Api.Data;
 using ArcsomAssetManagement.Api.DTOs.Business;
 using ArcsomAssetManagement.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
@@ -87,6 +88,7 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
+    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> Get([FromRoute] ulong id)
     {

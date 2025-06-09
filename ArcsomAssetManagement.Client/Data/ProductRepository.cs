@@ -3,6 +3,7 @@ using ArcsomAssetManagement.Client.Models;
 using AutoMapper;
 using Microsoft.Extensions.Logging;
 using SQLite;
+using System.Net;
 using System.Net.Http.Json;
 using System.Text.Json;
 
@@ -16,13 +17,13 @@ public class ProductRepository : IOnlineRepository<ProductDto>
     private readonly IMapper _mapper;
     private readonly string _apiUrl;
 
-    public ProductRepository(ILogger<ProductRepository> logger, SQLiteAsyncConnection database, HttpClient httpClient, IMapper mapper)
+    public ProductRepository(ILogger<ProductRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper)
     {
         _logger = logger;
         _database = database;
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         _mapper = mapper;
-        _apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/product" ?? string.Empty;
+        _apiUrl = "api/product";
         _ = InitAsync();
     }
 
@@ -39,23 +40,23 @@ public class ProductRepository : IOnlineRepository<ProductDto>
     }
 
     public async Task<Product?> GetAsync(ulong id)
-    {
+    {        
         if (await IsOnlineAsync())
         {
-            try
+            var response = await _httpClient.GetAsync($"{_apiUrl}/{id}");
+
+            if (response.StatusCode == HttpStatusCode.Unauthorized)
             {
-                var response = await _httpClient.GetAsync($"{_apiUrl}/{id}");
-                if (response.IsSuccessStatusCode)
-                {
-                    var json = await response.Content.ReadFromJsonAsync<ProductDto>();
-                    var domainItem = _mapper.Map<Product>(json ?? new ProductDto());
-                    return domainItem;
-                }
+                throw new HttpRequestException(HttpStatusCode.Unauthorized.ToString() + " - " + _apiUrl);
             }
-            catch (Exception ex)
+            if (response.IsSuccessStatusCode)
             {
-                _logger.LogError(ex, "Failed to get product online.");
+                var json = await response.Content.ReadFromJsonAsync<ProductDto>();
+                var domainItem = _mapper.Map<Product>(json ?? new ProductDto());
+                return domainItem;
             }
+
+            throw new Exception($"Error while fetching product: {response.StatusCode} - {response.ReasonPhrase}");
         }
 
         Product? product = await _database.FindAsync<Product>(id) ?? null;
@@ -251,9 +252,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
         using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
         try
         {
-            var uri = new Uri(_apiUrl);
-            var pingUri = uri.GetLeftPart(UriPartial.Authority) + "/ping";
-            var response = await _httpClient.GetAsync(pingUri, cts.Token);
+            var response = await _httpClient.GetAsync("ping", cts.Token);
             return response.IsSuccessStatusCode;
         }
         catch

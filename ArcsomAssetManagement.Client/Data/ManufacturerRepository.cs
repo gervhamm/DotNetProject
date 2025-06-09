@@ -16,13 +16,13 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
     private readonly IMapper _mapper;
     private readonly string _apiUrl;
 
-    public ManufacturerRepository(ILogger<ManufacturerRepository> logger, SQLiteAsyncConnection database, HttpClient httpClient, IMapper mapper)
+    public ManufacturerRepository(ILogger<ManufacturerRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper)
     {
         _logger = logger;
         _database = database;
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         _mapper = mapper;
-        _apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/manufacturer" ?? string.Empty;
+        _apiUrl = "api/manufacturer";
         _ = InitAsync();
     }
 

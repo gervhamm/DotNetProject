@@ -2,7 +2,7 @@ using ArcsomAssetManagement.Client.Models;
 using Microsoft.Extensions.Logging;
 using System.Text.Json;
 
-namespace ArcsomAssetManagement.Client.Data;
+namespace ArcsomAssetManagement.Client.Services;
 
 public class SeedDataService
 {

@@ -9,27 +9,30 @@ namespace ArcsomAssetManagement.Client.PageModels;
 public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel TODO: BaseViewModel met default reauste header with bearer
 {
     private readonly HttpClient _httpClient;
+    private readonly AuthRepository _authRepository;
     private readonly ModalErrorHandler _errorHandler;
 
 
     //public MainPageModel(SeedDataService seedDataService, ProjectRepository projectRepository,
     //    TaskRepository taskRepository, CategoryRepository categoryRepository, ModalErrorHandler errorHandler)
-    public MainPageModel(ModalErrorHandler errorHandler)
+    public MainPageModel(ModalErrorHandler errorHandler, AuthRepository authRepository)
     {
+        _authRepository = authRepository;
         _httpClient = new HttpClient();
 
         //_projectRepository = projectRepository;
         //_taskRepository = taskRepository;
         //_categoryRepository = categoryRepository;
         _errorHandler = errorHandler;
+        _authRepository = authRepository;
         //_seedDataService = seedDataService;
     }
 
     [ObservableProperty]
-    private string email;
+    private string _username;
 
     [ObservableProperty]
-    private string password;
+    private string _password;
 
     [ObservableProperty]
     private bool isBusy;
@@ -54,15 +57,14 @@ public partial class MainPageModel : ObservableObject//, IProjectTaskPageModel T
         try
         {
             IsBusy = true;
-
-            var loginDto = new LoginDto
+            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
             {
-                Email = email,
-                Password = password
-            };
+                await AppShell.Current.DisplayAlert("Notification", "Please enter both username and password.", "OK");
+                return;
+            }
+            var response = await _authRepository.LoginAsync(Username, Password);
 
-            var json = JsonConvert.SerializeObject(loginDto);
-            var content = new StringContent(json, Encoding.UTF8, "application/json");
+            _errorHandler.HandleError(new Exception(response));
 
             // TODO: var response = await _httpClient.PostAsync("https://yourapiurl.com/api/auth/login", content);
 

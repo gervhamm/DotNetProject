@@ -16,13 +16,13 @@ public class AssetRepository : IOnlineRepository<AssetDto>
     private readonly IMapper _mapper;
     private readonly string _apiUrl;
 
-    public AssetRepository(ILogger<AssetRepository> logger, SQLiteAsyncConnection database, HttpClient httpClient, IMapper mapper)
+    public AssetRepository(ILogger<AssetRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper)
     {
         _logger = logger;
         _database = database;
-        _httpClient = httpClient;
+        _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         _mapper = mapper;
-        _apiUrl = Environment.GetEnvironmentVariable("API_URL") + "/api/asset" ?? string.Empty;
+        _apiUrl = "api/asset";
         _ = InitAsync();
     }
 

@@ -70,6 +70,11 @@ public partial class ProductDetailPageModel : ObservableObject, IQueryAttributab
                     Manufacturer = SelectedManufacturer;
                 }
             }
+            catch (HttpRequestException e)
+            {
+                _errorHandler.HandleError(e);
+                await Shell.Current.GoToAsync("//main");
+            }
             catch (Exception e)
             {
                 _errorHandler.HandleError(e);
