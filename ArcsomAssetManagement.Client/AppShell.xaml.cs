@@ -6,9 +6,15 @@ namespace ArcsomAssetManagement.Client
 {
     public partial class AppShell : Shell
     {
+        private readonly AuthService _authService;
         public AppShell()
         {
             InitializeComponent();
+
+            _authService = Application.Current.Handler.MauiContext.Services.GetService<AuthService>();
+
+            this.Navigating += OnShellNavigating;
+
             var currentTheme = Application.Current!.UserAppTheme;
             //ThemeSegmentedControl.SelectedIndex = currentTheme == AppTheme.Light ? 0 : 1;
         }
@@ -46,6 +52,18 @@ namespace ArcsomAssetManagement.Client
         private void SfSegmentedControl_SelectionChanged(object sender, Syncfusion.Maui.Toolkit.SegmentedControl.SelectionChangedEventArgs e)
         {
             Application.Current!.UserAppTheme = e.NewIndex == 0 ? AppTheme.Light : AppTheme.Dark;
+        }
+
+        private async void OnShellNavigating(object sender, ShellNavigatingEventArgs e)
+        {
+            //var route = e.Target.Location.OriginalString;
+
+            //if (!await _authService.IsLoggedInAsync())
+            //{
+            //    await DisplaySnackbarAsync("Not logged in");
+            //    e.Cancel(); // Block the navigation
+            //    await Shell.Current.GoToAsync("//main");
+            //}
         }
     }
 }

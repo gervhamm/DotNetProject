@@ -19,7 +19,10 @@ namespace ArcsomAssetManagement.Client
             var builder = MauiApp.CreateBuilder();
             builder
                 .UseMauiApp<App>()
-                .UseMauiCommunityToolkit()
+                .UseMauiCommunityToolkit(options =>
+                {
+                    options.SetShouldEnableSnackbarOnWindows(true);
+                })
                 .ConfigureSyncfusionToolkit()
                 .ConfigureMauiHandlers(handlers =>
                 {
@@ -64,6 +67,7 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddSingleton<ConnectivityService>();
             builder.Services.AddSingleton<ModalErrorHandler>(); 
             builder.Services.AddTransient<AuthHeaderHandler>();
+            builder.Services.AddSingleton<AuthService>();
 
             builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
             {

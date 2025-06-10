@@ -6,9 +6,10 @@ using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
-public partial class AssetListPageModel : ObservableObject
+public partial class AssetListPageModel : BasePageModel
 {
     private readonly AssetRepository _assetRepository;
+    private readonly AuthService _authService;
 
     private List<Product> _products = [];
 
@@ -30,7 +31,7 @@ public partial class AssetListPageModel : ObservableObject
     [ObservableProperty]
     private int selectedPage;
 
-    public AssetListPageModel(AssetRepository assetRepository)
+    public AssetListPageModel(AssetRepository assetRepository, AuthService authService) : base (authService)
     {
         _assetRepository = assetRepository;
         _pagination = new PaginationModel
@@ -45,6 +46,7 @@ public partial class AssetListPageModel : ObservableObject
     [RelayCommand]
     private async Task Appearing()
     {
+        await CheckAuthAsync();
         (Assets, _pagination) = await _assetRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize);
         FilteredAssets = Assets;
         PageNumbers = PaginationHelper.SetPagenumbers(_pagination.CurrentPage, _pagination.TotalPages);

@@ -1,6 +1,4 @@
-﻿using ArcsomAssetManagement.Client.Data;
-using ArcsomAssetManagement.Client.DTOs.Business;
-using ArcsomAssetManagement.Client.Models;
+﻿using ArcsomAssetManagement.Client.Models;
 using AutoMapper;
 using SQLite;
 using System.Text.Json;

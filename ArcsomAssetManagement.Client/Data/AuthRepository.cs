@@ -41,7 +41,7 @@ public class AuthRepository
 
     }
 
-    public async Task<string> LoginAsync(string username, string password)
+    public async Task<bool> LoginAsync(string username, string password)
     {
         _isOnline = await IsOnlineAsync();
         if (_isOnline)
@@ -54,7 +54,7 @@ public class AuthRepository
 
             await StoreHashedPasswordAndTokenOfflineAsync(username, password, token);
 
-            return token;
+            return true;
         }
         else
         {
@@ -72,7 +72,7 @@ public class AuthRepository
                 var token = await TokenStorage.GetTokenUserAsync($"token_{username}");
                 await TokenStorage.SaveTokenAsync(token);
 
-                return token;
+                return true;
             }
         }
     }
