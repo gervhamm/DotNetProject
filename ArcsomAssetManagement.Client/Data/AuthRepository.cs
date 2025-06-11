@@ -78,7 +78,7 @@ public class AuthRepository
     }
     private async Task<bool> IsOnlineAsync()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(30));
+        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
         try
         {
             var response = await _httpClient.GetAsync("ping", cts.Token);

@@ -1,20 +1,15 @@
-using ArcsomAssetManagement.Client.DTOs.Auth;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using Newtonsoft.Json;
-using System.Text;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class MainPageModel : BasePageModel
 {
-    private readonly HttpClient _httpClient;
     private readonly AuthRepository _authRepository;
     private readonly ModalErrorHandler _errorHandler;
     public MainPageModel(ModalErrorHandler errorHandler, AuthRepository authRepository, AuthService authService) : base(authService)
     {
         _authRepository = authRepository;
-        _httpClient = new HttpClient();
         _errorHandler = errorHandler;
         _authRepository = authRepository;
         //TODO: _seedDataService = seedDataService;
@@ -73,7 +68,29 @@ public partial class MainPageModel : BasePageModel
         }
         catch (Exception ex)
         {
-            await AppShell.DisplaySnackbarAsync($"An error occurred: {ex.Message}");
+            _errorHandler.HandleError(ex);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
+    public async Task LogoutAsync()
+    {
+        if (IsBusy) return;
+        try
+        {
+            IsBusy = true;
+            await _authService.LogoutAsync();
+            DisplayLoggedIn = false;
+            DisplayCurrentUser = string.Empty;
+            await AppShell.DisplaySnackbarAsync("You have been logged out.");
+        }
+        catch (Exception ex)
+        {
+            _errorHandler.HandleError(ex);
         }
         finally
         {
@@ -209,13 +226,4 @@ public partial class MainPageModel : BasePageModel
     //            await Refresh();
     //        }
     //    }
-
-    //    [RelayCommand]
-    //    private Task TaskCompleted(ProjectTask task)
-    //    {
-    //        OnPropertyChanged(nameof(HasCompletedTasks));
-    //        return _taskRepository.SaveItemAsync(task);
-    //    }
-
-
 }

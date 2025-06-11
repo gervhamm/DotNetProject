@@ -52,7 +52,11 @@ public static class TokenStorage
     public static async Task<string> GetCurrentUsername()
     {
         var jwt = await GetTokenAsync();
-        return ReadTokenClaims(jwt).TryGetValue(ClaimTypes.Name, out var name) ? name : null;
+        if (string.IsNullOrEmpty(jwt))
+        {
+            return string.Empty;
+        }
+        return ReadTokenClaims(jwt).TryGetValue(ClaimTypes.Name, out var name) ? name : string.Empty;
     }
         
 

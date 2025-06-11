@@ -13,6 +13,19 @@ public class AuthService
         if (!DateTime.TryParse(tokenExpiry, out var expiry))
             return false;
 
-        return expiry > DateTime.UtcNow;
+        if (expiry < DateTime.UtcNow)
+        {
+            await LogoutAsync();
+            return false;
+        }
+
+            return expiry > DateTime.UtcNow;
+    }
+
+    public async Task LogoutAsync()
+    {
+        TokenStorage.RemoveToken();
+
+        await Shell.Current.GoToAsync("//main");
     }
 }
