@@ -14,14 +14,16 @@ public class AssetRepository : IOnlineRepository<AssetDto>
     private SQLiteAsyncConnection? _database;
     private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
+    private readonly ConnectivityService _connectivity;
     private readonly string _apiUrl;
 
-    public AssetRepository(ILogger<AssetRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper)
+    public AssetRepository(ILogger<AssetRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper, ConnectivityService connectivity)
     {
         _logger = logger;
         _database = database;
         _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         _mapper = mapper;
+        _connectivity = connectivity;
         _apiUrl = "api/asset";
         _ = InitAsync();
     }
@@ -40,7 +42,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
 
     public async Task<Asset?> GetAsync(ulong id)
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -69,7 +71,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
 
     public async Task<List<Asset>> ListAsync()
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -117,7 +119,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
 
         var apiUrlPaged = $"{_apiUrl}/Paged?pageNumber={pageNumber}&pageSize={pageSize}&filter={filter}";
 
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -169,7 +171,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
         AssetDto dto = _mapper.Map<AssetDto>(item);
         if (item.Id == 0)
         {
-            if (await IsOnlineAsync())
+            if (_connectivity.IsOnline)
             {
                 await SaveItemOnlineAsync(dto);
                 await _database.InsertAsync(item);
@@ -193,7 +195,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
         else
         {
 
-            if (await IsOnlineAsync())
+            if (_connectivity.IsOnline)
             {
                 await UpdateItemOnlineAsync(dto);
                 var updatedRows = await _database.UpdateAsync(item);
@@ -218,7 +220,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
     }
     public async Task<int> DeleteItemAsync(Asset item)
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -244,22 +246,6 @@ public class AssetRepository : IOnlineRepository<AssetDto>
         });
 
         return await _database.DeleteAsync(item);
-    }
-
-    private async Task<bool> IsOnlineAsync()
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-        try
-        {
-            var uri = new Uri(_apiUrl);
-            var pingUri = uri.GetLeftPart(UriPartial.Authority) + "/ping";
-            var response = await _httpClient.GetAsync(pingUri, cts.Token);
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
-            return false;
-        }
     }
 
     public async Task<IEnumerable<AssetDto>> ListOnlineAsync()
@@ -330,6 +316,38 @@ public class AssetRepository : IOnlineRepository<AssetDto>
             //{
             //    await _database.UpdateAsync(item);
             //}
+        }
+    }
+    public async Task<bool> ClearTableAsync()
+    {
+        await InitAsync();
+
+        if (_connectivity.IsOnline)
+        {
+            var isClearedOnline = await ClearTableOnlineAsync();
+
+            if (!isClearedOnline)
+            {
+                throw new Exception("Failed to clear asset table online.");
+            }
+        }
+
+        await _database.DeleteAllAsync<Asset>();
+        await _database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name = 'Asset'");
+        return true;
+    }
+
+    public async Task<bool> ClearTableOnlineAsync()
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"{_apiUrl}/clear");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to drop asset table online.");
+            return false;
         }
     }
 }

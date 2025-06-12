@@ -15,6 +15,7 @@ public class AuthService
 
         if (expiry < DateTime.UtcNow)
         {
+            await AppShell.DisplaySnackbarAsync("User credentials have expired!");
             await LogoutAsync();
             return false;
         }

@@ -1,6 +1,7 @@
 ﻿using ArcsomAssetManagement.Client.DTOs.Business;
 using ArcsomAssetManagement.Client.Models;
 using AutoMapper;
+using Microsoft.Data.Sqlite;
 using Microsoft.Extensions.Logging;
 using SQLite;
 using System.Net;
@@ -15,16 +16,19 @@ public class ProductRepository : IOnlineRepository<ProductDto>
     private SQLiteAsyncConnection? _database;
     private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
+    private readonly ConnectivityService _connectivity;
     private readonly string _apiUrl;
 
-    public ProductRepository(ILogger<ProductRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper)
+    public ProductRepository(ILogger<ProductRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper, ConnectivityService connectivity)
     {
         _logger = logger;
         _database = database;
         _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         _mapper = mapper;
+        _connectivity = connectivity;
         _apiUrl = "api/product";
         _ = InitAsync();
+        _connectivity = connectivity;
     }
 
     private async Task InitAsync()
@@ -41,7 +45,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
 
     public async Task<Product?> GetAsync(ulong id)
     {        
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             var response = await _httpClient.GetAsync($"{_apiUrl}/{id}");
 
@@ -70,7 +74,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
 
     public async Task<List<Product>> ListAsync()
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -118,7 +122,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
 
         var apiUrlPaged = $"{_apiUrl}/Paged?pageNumber={pageNumber}&pageSize={pageSize}&filter={filter}";
 
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -170,7 +174,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
         ProductDto dto = _mapper.Map<ProductDto>(item);
         if (item.Id == 0)
         {
-            if (await IsOnlineAsync())
+            if (_connectivity.IsOnline)
             {
                 await SaveItemOnlineAsync(dto);
                 await _database.InsertAsync(item);
@@ -194,7 +198,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
         else
         {
 
-            if (await IsOnlineAsync())
+            if (_connectivity.IsOnline)
             {
                 await UpdateItemOnlineAsync(dto);
                 var updatedRows = await _database.UpdateAsync(item);
@@ -219,7 +223,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
     }
     public async Task<int> DeleteItemAsync(Product item)
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -245,20 +249,6 @@ public class ProductRepository : IOnlineRepository<ProductDto>
         });
 
         return await _database.DeleteAsync(item);
-    }
-
-    private async Task<bool> IsOnlineAsync()
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-        try
-        {
-            var response = await _httpClient.GetAsync("ping", cts.Token);
-            return response.IsSuccessStatusCode;
-        }
-        catch
-        {
-            return false;
-        }
     }
 
     public async Task<IEnumerable<ProductDto>> ListOnlineAsync()
@@ -329,6 +319,38 @@ public class ProductRepository : IOnlineRepository<ProductDto>
             //{
             //    await _database.UpdateAsync(item);
             //}
+        }
+    }
+    public async Task<bool> ClearTableAsync()
+    {
+        await InitAsync();
+
+        if (_connectivity.IsOnline)
+        {
+            var isClearedOnline = await ClearTableOnlineAsync();
+
+            if (!isClearedOnline)
+            {
+                throw new Exception("Failed to clear product table online.");
+            }
+        }
+
+        await _database.DeleteAllAsync<Product>();
+        await _database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name = 'Product'");
+        return true;
+    }
+
+    public async Task<bool> ClearTableOnlineAsync()
+    {
+        try
+        {
+            var response = await _httpClient.DeleteAsync($"{_apiUrl}/clear");
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception ex)
+        {
+            _logger.LogError(ex, "Failed to drop product table online.");
+            return false;
         }
     }
 }

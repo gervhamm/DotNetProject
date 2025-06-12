@@ -14,14 +14,17 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
     private SQLiteAsyncConnection? _database;
     private readonly HttpClient _httpClient;
     private readonly IMapper _mapper;
+    private readonly ConnectivityService _connectivity;
+
     private readonly string _apiUrl;
 
-    public ManufacturerRepository(ILogger<ManufacturerRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper)
+    public ManufacturerRepository(ILogger<ManufacturerRepository> logger, SQLiteAsyncConnection database, IHttpClientFactory httpClientFactory, IMapper mapper, ConnectivityService connectivity)
     {
         _logger = logger;
         _database = database;
         _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         _mapper = mapper;
+        _connectivity = connectivity;
         _apiUrl = "api/manufacturer";
         _ = InitAsync();
     }
@@ -40,7 +43,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
 
     public async Task<Manufacturer?> GetAsync(ulong id)
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -68,7 +71,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
 
     public async Task<List<Manufacturer>> ListAsync()
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -110,7 +113,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
 
         var apiUrlPaged = _apiUrl + $"/Paged?pageNumber={pageNumber}&pageSize={pageSize}&filter={filter}&desc={desc}";
 
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -165,7 +168,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
         ManufacturerDto dto = _mapper.Map<ManufacturerDto>(item);
         if (item.Id == 0)
         {
-            if (await IsOnlineAsync())
+            if (_connectivity.IsOnline)
             {
                 await SaveItemOnlineAsync(dto);
                 await _database.InsertAsync(item);
@@ -190,7 +193,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
         else
         {
 
-            if (await IsOnlineAsync())
+            if (_connectivity.IsOnline)
             {
                 await UpdateItemOnlineAsync(dto);
                 var updatedRows = await _database.UpdateAsync(item);
@@ -223,7 +226,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
     }
     public async Task<int> DeleteItemAsync(Manufacturer item)
     {
-        if (await IsOnlineAsync())
+        if (_connectivity.IsOnline)
         {
             try
             {
@@ -310,19 +313,35 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
             //}
         }
     }
-
-    private async Task<bool> IsOnlineAsync()
+    public async Task<bool> ClearTableAsync()
     {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
+        await InitAsync();
+
+        if (_connectivity.IsOnline)
+        {
+            var isClearedOnline = await ClearTableOnlineAsync();
+
+            if (!isClearedOnline)
+            {
+                throw new Exception("Failed to clear product table online.");
+            }
+        }
+
+        await _database.DeleteAllAsync<Manufacturer>();
+        await _database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name = 'Manufacturer'");
+        return true;
+    }
+
+    public async Task<bool> ClearTableOnlineAsync()
+    {
         try
         {
-            var uri = new Uri(_apiUrl);
-            var pingUri = uri.GetLeftPart(UriPartial.Authority) + "/ping";
-            var response = await _httpClient.GetAsync(pingUri, cts.Token);
+            var response = await _httpClient.DeleteAsync($"{_apiUrl}/clear");
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Failed to drop manufacturer table online.");
             return false;
         }
     }

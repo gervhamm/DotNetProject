@@ -1,11 +1,7 @@
 ﻿using ArcsomAssetManagement.Client.DTOs.Auth;
 using ArcsomAssetManagement.Client.DTOs.Business;
-using CommunityToolkit.Maui.Behaviors;
 using Microsoft.AspNetCore.Cryptography.KeyDerivation;
-using Microsoft.Extensions.Logging;
 using SQLite;
-using System.Data.SqlTypes;
-using System.Diagnostics;
 using System.IdentityModel.Tokens.Jwt;
 using System.Net.Http.Json;
 using System.Security.Cryptography;
@@ -14,20 +10,21 @@ namespace ArcsomAssetManagement.Client.Data;
 
 public class AuthRepository
 {
-    private readonly ILogger<AuthRepository> _logger;
     private readonly HttpClient _httpClient;
     private SQLiteAsyncConnection _database;
+    private readonly ConnectivityService _connectivity;
 
     private readonly string _apiUrl;
     private bool _isOnline = false;
 
-    public AuthRepository(IHttpClientFactory httpClientFactory, SQLiteAsyncConnection database, ILogger<AuthRepository> logger)
+    public AuthRepository(IHttpClientFactory httpClientFactory, SQLiteAsyncConnection database, ConnectivityService connectivity)
     {
         _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
         _apiUrl = "auth/login";
         _database = database;
-        _logger = logger;
+        _connectivity = connectivity;
         _ = InitAsync();
+        _connectivity = connectivity;
     }
 
     private async Task InitAsync()
@@ -43,7 +40,7 @@ public class AuthRepository
 
     public async Task<bool> LoginAsync(string username, string password)
     {
-        _isOnline = await IsOnlineAsync();
+        _isOnline = _connectivity.IsOnline;
         if (_isOnline)
         {
             var response = await _httpClient.PostAsJsonAsync(_apiUrl, new UserDto { Username = username, Password = password });
@@ -74,20 +71,6 @@ public class AuthRepository
 
                 return true;
             }
-        }
-    }
-    private async Task<bool> IsOnlineAsync()
-    {
-        using var cts = new CancellationTokenSource(TimeSpan.FromSeconds(3));
-        try
-        {
-            var response = await _httpClient.GetAsync("ping", cts.Token);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            Debug.WriteLine(e.Message);
-            return false;
         }
     }
 

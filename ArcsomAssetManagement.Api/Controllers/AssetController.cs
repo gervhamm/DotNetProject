@@ -1,12 +1,14 @@
 ﻿using ArcsomAssetManagement.Api.Data;
 using ArcsomAssetManagement.Api.DTOs.Business;
 using ArcsomAssetManagement.Api.Models;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 
 namespace ArcsomAssetManagement.Api.Controllers;
 
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class AssetController : ControllerBase
@@ -49,7 +51,7 @@ public class AssetController : ControllerBase
 
         var totalAssets = await _context.Assets.CountAsync(stoppingToken);
 
-        if (assets == null)
+        if (!assets.Any())
         {
             return NotFound("Not Found");
         }
@@ -79,7 +81,7 @@ public class AssetController : ControllerBase
                 }
             })
             .ToListAsync(stoppingToken);
-        if (assets == null)
+        if (!assets.Any())
         {
             return NotFound("Not Found");
         }
@@ -191,6 +193,22 @@ public class AssetController : ControllerBase
 
         _context.Assets.Remove(asset);
         await _context.SaveChangesAsync(stoppingToken);
+
+        return NoContent();
+    }
+
+    [Authorize]
+    [HttpDelete("clear")]
+    public async Task<IActionResult> Clear()
+    {
+        var source = new CancellationTokenSource();
+        source.CancelAfter(TimeSpan.FromSeconds(10));
+        var stoppingToken = source.Token;
+
+        var assets = await _context.Assets.ToListAsync();
+        _context.Assets.RemoveRange(assets);
+        await _context.SaveChangesAsync(stoppingToken);
+        await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Assets', RESEED, 0)");
 
         return NoContent();
     }

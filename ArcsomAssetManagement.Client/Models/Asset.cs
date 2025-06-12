@@ -16,3 +16,7 @@ public class Asset : IIdentifiable
     public Product? Product { get; set; }
     public override string ToString() => $"{Name}";
 }
+public class AssetsJson
+{
+    public List<Asset> Assets { get; set; } = [];
+}

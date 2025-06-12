@@ -2,10 +2,11 @@ using ArcsomAssetManagement.Client.DTOs.Business;
 using ArcsomAssetManagement.Client.Models;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
+using System.ComponentModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 //TODO: Rename "Meta"
-public partial class ManageMetaPageModel : ObservableObject
+public partial class ManageMetaPageModel : ObservableObject, INotifyPropertyChanged
 {
     private readonly SeedDataService _seedDataService;
     private readonly ConnectivityService _connectivity;
@@ -21,12 +22,16 @@ public partial class ManageMetaPageModel : ObservableObject
         _seedDataService = seedDataService;
         _errorHandler = errorHandler;
         _manufacturerSyncService = syncService;
+
+        _connectivity.PropertyChanged += Connectivity_PropertyChanged;
+
+        UpdateOnlineColor();
     }
 
     [RelayCommand]
     private async Task Appearing()
     {
-        await LoadData();
+        UpdateOnlineColor();
     }   
 
     [RelayCommand]
@@ -55,19 +60,19 @@ public partial class ManageMetaPageModel : ObservableObject
     [RelayCommand]
     private async Task ToggleOnline()
     {
-        _connectivity.IsOnline = !_connectivity.IsOnline;
-        IsOnlineColor = _connectivity.IsOnline ? "Green" : "Red";
+        _connectivity.IsOfflineMode = !_connectivity.IsOfflineMode;
+        UpdateOnlineColor();
     }
 
-    private async Task LoadData()
+    private void Connectivity_PropertyChanged(object? sender, PropertyChangedEventArgs e)
     {
-        try
+        if (e.PropertyName == nameof(ConnectivityService.IsOnline))
         {
-            IsOnlineColor = _connectivity.IsOnline ? "Green" : "Red";
+            UpdateOnlineColor();
         }
-        catch (Exception e)
-        {
-            _errorHandler.HandleError(e);
-        }
+    }
+    private void UpdateOnlineColor()
+    {
+        IsOnlineColor = _connectivity.IsOnline ? "Green" : "Red";
     }
 }

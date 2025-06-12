@@ -20,6 +20,7 @@ public class ProductController : ControllerBase
         _logger = logger;
     }
 
+    [Authorize]
     [HttpGet("Paged")]
     public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 3, string filter = "")
     {
@@ -50,7 +51,7 @@ public class ProductController : ControllerBase
 
         var totalProducts = await _context.Products.CountAsync(stoppingToken);
 
-        if (products == null)
+        if (!products.Any())
         {
             return NotFound("Not Found");
         }
@@ -60,6 +61,7 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
+    [Authorize]
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -81,7 +83,7 @@ public class ProductController : ControllerBase
                 }
             })
             .ToListAsync(stoppingToken);
-        if (products == null)
+        if (!products.Any())
         {
             return NotFound("Not Found");
         }
@@ -119,6 +121,7 @@ public class ProductController : ControllerBase
         return Ok(product);
     }
 
+    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] ProductDto request)
     {
@@ -152,6 +155,7 @@ public class ProductController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpPatch("{id}")]
     public async Task<IActionResult> Update([FromRoute] ulong id, [FromBody] ProductDto request)
     {
@@ -181,6 +185,7 @@ public class ProductController : ControllerBase
         }
     }
 
+    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Remove(ulong id)
     {
@@ -199,6 +204,21 @@ public class ProductController : ControllerBase
         await _context.SaveChangesAsync(stoppingToken);
 
         return NoContent();
+    }
 
+    [Authorize]
+    [HttpDelete("clear")]
+    public async Task<IActionResult> Clear()
+    {
+        var source = new CancellationTokenSource();
+        source.CancelAfter(TimeSpan.FromSeconds(10));
+        var stoppingToken = source.Token;
+
+        var products = await _context.Products.ToListAsync();
+        _context.Products.RemoveRange(products);
+        await _context.SaveChangesAsync(stoppingToken);
+        await _context.Database.ExecuteSqlRawAsync("DBCC CHECKIDENT ('Products', RESEED, 0)");
+
+        return NoContent();
     }
 }

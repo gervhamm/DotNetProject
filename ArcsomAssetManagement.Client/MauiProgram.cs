@@ -68,6 +68,7 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddSingleton<ModalErrorHandler>(); 
             builder.Services.AddTransient<AuthHeaderHandler>();
             builder.Services.AddSingleton<AuthService>();
+            builder.Services.AddSingleton<AppFaker>();
 
             builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
             {

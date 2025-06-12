@@ -21,19 +21,33 @@ public class ConnectivityService : INotifyPropertyChanged
             }
         }
     }
-    //public ConnectivityService()
-    //{
-    //    UpdateConnectivity(Connectivity.NetworkAccess);
-    //    Connectivity.ConnectivityChanged += OnConnectivityChanged;
-    //}
 
-    //private void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
-    //{
-    //    UpdateConnectivity(e.NetworkAccess);
-    //}
+    private bool _isOfflineMode = false;
+    public bool IsOfflineMode
+    {
+        get => _isOfflineMode;
+        set
+        {
+            _isOfflineMode = value;
 
-    //private void UpdateConnectivity(NetworkAccess access)
-    //{
-    //    IsOnline = access == NetworkAccess.Internet;
-    //}
+            var access = _isOfflineMode ? NetworkAccess.None : Connectivity.NetworkAccess;
+            UpdateConnectivity(access);            
+        }
+    }
+    public ConnectivityService()
+    {
+        UpdateConnectivity(Connectivity.NetworkAccess);
+        Connectivity.ConnectivityChanged += OnConnectivityChanged;
+    }
+
+    private void OnConnectivityChanged(object? sender, ConnectivityChangedEventArgs e)
+    {
+        var access = IsOfflineMode ? NetworkAccess.None : e.NetworkAccess;
+        UpdateConnectivity(access);
+    }
+
+    private void UpdateConnectivity(NetworkAccess access)
+    {
+        IsOnline = access == NetworkAccess.Internet;
+    }
 }
