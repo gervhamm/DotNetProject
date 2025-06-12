@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArcsomAssetManagement.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ProductController : ControllerBase
@@ -20,7 +21,6 @@ public class ProductController : ControllerBase
         _logger = logger;
     }
 
-    [Authorize]
     [HttpGet("Paged")]
     public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 3, string filter = "")
     {
@@ -61,7 +61,6 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
-    [Authorize]
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -90,7 +89,6 @@ public class ProductController : ControllerBase
         return Ok(products);
     }
 
-    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> Get([FromRoute] ulong id)
     {
@@ -121,7 +119,6 @@ public class ProductController : ControllerBase
         return Ok(product);
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] ProductDto request)
     {
@@ -155,7 +152,6 @@ public class ProductController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpPatch("{id}")]
     public async Task<IActionResult> Update([FromRoute] ulong id, [FromBody] ProductDto request)
     {
@@ -185,7 +181,6 @@ public class ProductController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Remove(ulong id)
     {
@@ -206,7 +201,6 @@ public class ProductController : ControllerBase
         return NoContent();
     }
 
-    [Authorize]
     [HttpDelete("clear")]
     public async Task<IActionResult> Clear()
     {

@@ -77,6 +77,33 @@ public partial class MainPageModel : BasePageModel
     }
 
     [RelayCommand]
+    public async Task RegisterAsync()
+    {
+        if (IsBusy) return;
+
+        try
+        {
+            IsBusy = true;
+            if (string.IsNullOrWhiteSpace(Username) || string.IsNullOrWhiteSpace(Password))
+            {
+                await AppShell.Current.DisplayAlert("Notification", "Please enter both username and password.", "OK");
+                return;
+            }
+
+            var response = await _authRepository.RegisterAsync(Username, Password);
+            await AppShell.DisplaySnackbarAsync("Registration successful! You can now log in.");            
+        }
+        catch (Exception ex)
+        {
+            _errorHandler.HandleError(ex);
+        }
+        finally
+        {
+            IsBusy = false;
+        }
+    }
+
+    [RelayCommand]
     public async Task LogoutAsync()
     {
         if (IsBusy) return;

@@ -20,6 +20,7 @@ public abstract class BasePageModel : ObservableObject
 
         if (!IsLoggedIn)
         {
+            await AppShell.DisplaySnackbarAsync("You are not logged in. No Access");
             await Shell.Current.GoToAsync("//main");
         }
         CurrentUser = await TokenStorage.GetCurrentUsername();

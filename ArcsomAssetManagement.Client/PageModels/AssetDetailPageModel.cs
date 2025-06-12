@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
-public partial class AssetDetailPageModel : ObservableObject, IQueryAttributable
+public partial class AssetDetailPageModel : BasePageModel, IQueryAttributable
 {
     public const string ProductQueryKey = "product";
 
@@ -31,11 +31,17 @@ public partial class AssetDetailPageModel : ObservableObject, IQueryAttributable
     [ObservableProperty]
     private int _selectedProductIndex;
 
-    public AssetDetailPageModel(AssetRepository assetRepository, ProductRepository productRepository, ModalErrorHandler errorHandler)
+    public AssetDetailPageModel(AssetRepository assetRepository, ProductRepository productRepository, ModalErrorHandler errorHandler, AuthService authService) : base(authService)
     {
         _assetRepository = assetRepository;
         _productRepository = productRepository;
         _errorHandler = errorHandler;
+    }
+
+    [RelayCommand]
+    private async Task Appearing()
+    {
+        await CheckAuthAsync();
     }
     public void ApplyQueryAttributes(IDictionary<string, object> query)
     {

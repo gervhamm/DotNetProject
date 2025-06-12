@@ -14,13 +14,11 @@ public class AuthRepository
     private SQLiteAsyncConnection _database;
     private readonly ConnectivityService _connectivity;
 
-    private readonly string _apiUrl;
     private bool _isOnline = false;
 
     public AuthRepository(IHttpClientFactory httpClientFactory, SQLiteAsyncConnection database, ConnectivityService connectivity)
     {
         _httpClient = httpClientFactory.CreateClient("AuthorizedClient");
-        _apiUrl = "auth/login";
         _database = database;
         _connectivity = connectivity;
         _ = InitAsync();
@@ -38,12 +36,37 @@ public class AuthRepository
 
     }
 
+    public async Task<bool> RegisterAsync(string username, string password)
+    {
+        _isOnline = _connectivity.IsOnline;
+        if (_isOnline)
+        {
+            var userDto = new UserDto
+            {
+                Username = username,
+                Password = password
+            };
+            var response = await _httpClient.PostAsJsonAsync("auth/register", userDto);
+            if(response.StatusCode == System.Net.HttpStatusCode.BadRequest)
+            {
+                var errors = await response.Content.ReadAsStringAsync();
+                throw new Exception(errors);
+            }
+            response.EnsureSuccessStatusCode();
+            return true;
+        }
+        else
+        {
+            throw new Exception("Cannot register while offline.");
+        }
+    }
+
     public async Task<bool> LoginAsync(string username, string password)
     {
         _isOnline = _connectivity.IsOnline;
         if (_isOnline)
         {
-            var response = await _httpClient.PostAsJsonAsync(_apiUrl, new UserDto { Username = username, Password = password });
+            var response = await _httpClient.PostAsJsonAsync("auth/login", new UserDto { Username = username, Password = password });
             response.EnsureSuccessStatusCode();
 
             var token = await response.Content.ReadAsStringAsync();

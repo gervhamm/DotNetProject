@@ -6,7 +6,7 @@ using System.ComponentModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 //TODO: Rename "Meta"
-public partial class ManageMetaPageModel : ObservableObject, INotifyPropertyChanged
+public partial class ManageMetaPageModel : BasePageModel, INotifyPropertyChanged
 {
     private readonly SeedDataService _seedDataService;
     private readonly ConnectivityService _connectivity;
@@ -16,7 +16,7 @@ public partial class ManageMetaPageModel : ObservableObject, INotifyPropertyChan
     [ObservableProperty]
     private string _isOnlineColor = string.Empty;
 
-    public ManageMetaPageModel(ConnectivityService connectivityService, SeedDataService seedDataService, ModalErrorHandler errorHandler, SyncService<Manufacturer, ManufacturerDto> syncService)
+    public ManageMetaPageModel(ConnectivityService connectivityService, SeedDataService seedDataService, ModalErrorHandler errorHandler, SyncService<Manufacturer, ManufacturerDto> syncService, AuthService authService) : base(authService)
     {
         _connectivity = connectivityService;
         _seedDataService = seedDataService;
@@ -31,6 +31,7 @@ public partial class ManageMetaPageModel : ObservableObject, INotifyPropertyChan
     [RelayCommand]
     private async Task Appearing()
     {
+        await CheckAuthAsync();
         UpdateOnlineColor();
     }   
 

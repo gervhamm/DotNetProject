@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
-public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttributable
+public partial class ManufacturerDetailPageModel : BasePageModel, IQueryAttributable
 {
     private Manufacturer? _manufacturer;
     private ManufacturerRepository _manufacturerRepository;
@@ -24,11 +24,17 @@ public partial class ManufacturerDetailPageModel : ObservableObject, IQueryAttri
 
     [ObservableProperty]
     bool _isBusy;
-    public ManufacturerDetailPageModel(ManufacturerRepository manufacturerRepository, ModalErrorHandler errorHandler)//IProductRepository productRepository
+    public ManufacturerDetailPageModel(ManufacturerRepository manufacturerRepository, ModalErrorHandler errorHandler, AuthService authService) : base(authService)
     {
         _manufacturerRepository = manufacturerRepository;
 
         _errorHandler = errorHandler;
+    }
+
+    [RelayCommand]
+    private async Task Appearing()
+    {
+        await CheckAuthAsync();
     }
 
     [RelayCommand]

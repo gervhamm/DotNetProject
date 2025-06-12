@@ -7,6 +7,7 @@ using Microsoft.EntityFrameworkCore;
 
 namespace ArcsomAssetManagement.Api.Controllers;
 
+[Authorize]
 [ApiController]
 [Route("api/[controller]")]
 public class ManufacturerController : ControllerBase
@@ -20,7 +21,6 @@ public class ManufacturerController : ControllerBase
         _logger = logger;
     }
 
-    [Authorize]
     [HttpGet("Paged")]
     public async Task<IActionResult> GetPaged(int pageNumber = 1, int pageSize = 3, string filter = "", bool desc = false)
     {
@@ -65,7 +65,6 @@ public class ManufacturerController : ControllerBase
         return Ok(manufacturers);
     }
 
-    [Authorize]
     [HttpGet]
     public async Task<IActionResult> Get()
     {
@@ -89,7 +88,6 @@ public class ManufacturerController : ControllerBase
         return Ok(manufacturers);
     }
 
-    [Authorize]
     [HttpGet("{id}")]
     public async Task<IActionResult> Get([FromRoute] ulong id)
     {
@@ -130,7 +128,6 @@ public class ManufacturerController : ControllerBase
         return Ok(manufacturer);
     }
 
-    [Authorize]
     [HttpPost]
     public async Task<IActionResult> Add([FromBody] ManufacturerDto request)
     {
@@ -167,7 +164,6 @@ public class ManufacturerController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpPatch("{id}")]
     public async Task<IActionResult> Update([FromRoute] ulong id, [FromBody] ManufacturerDto request)
     {
@@ -196,7 +192,6 @@ public class ManufacturerController : ControllerBase
         }
     }
 
-    [Authorize]
     [HttpDelete("{id}")]
     public async Task<IActionResult> Remove(ulong id)
     {
@@ -222,7 +217,6 @@ public class ManufacturerController : ControllerBase
         return NoContent();
     }
 
-    [Authorize]
     [HttpDelete("clear")]
     public async Task<IActionResult> Clear()
     {
