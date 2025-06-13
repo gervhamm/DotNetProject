@@ -2,15 +2,12 @@
 using ArcsomAssetManagement.Client.PageModels.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class ProductListPageModel : ObservableObject
 {
     private readonly ProductRepository _productRepository;
-    
-    private List<Manufacturer> _manufacturers = [];
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -45,7 +42,8 @@ public partial class ProductListPageModel : ObservableObject
     [RelayCommand]
     private async Task Appearing()
     {
-        await LoadManufacturers(Pagination);
+        SearchText = "";
+        await LoadProducts(Pagination);
     }
 
     [RelayCommand]
@@ -72,7 +70,7 @@ public partial class ProductListPageModel : ObservableObject
                 PageSize = Pagination.PageSize,
                 TotalItems = 0
             };
-            await LoadManufacturers(pagination, SearchText);
+            await LoadProducts(pagination, SearchText);
         }
     }
     [RelayCommand]
@@ -103,14 +101,12 @@ public partial class ProductListPageModel : ObservableObject
                 break;
         }
         Pagination.CurrentPage = newPageNumber;
-        Appearing();
+        await LoadProducts(Pagination, searchText);
     }
-
-    private async Task LoadManufacturers(PaginationModel pagination, string searchText = "")
+    private async Task LoadProducts(PaginationModel pagination, string searchText = "")
     {
         (Products, Pagination) = await _productRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize, filter: searchText);
         FilteredProducts = Products;
-        PageNumbers = PaginationHelper.SetPagenumbers(Pagination.CurrentPage, Pagination.TotalPages);
-        
+        PageNumbers = PaginationHelper.SetPagenumbers(Pagination.CurrentPage, Pagination.TotalPages); 
     }
 }

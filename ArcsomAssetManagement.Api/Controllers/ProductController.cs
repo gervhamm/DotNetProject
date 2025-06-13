@@ -49,7 +49,9 @@ public class ProductController : ControllerBase
             .Take(pageSize)
             .ToListAsync(stoppingToken);
 
-        var totalProducts = await _context.Products.CountAsync(stoppingToken);
+        var totalProducts = await _context.Products
+                                    .Where(m => m.Name.ToLower().Contains(filter))
+                                    .CountAsync(stoppingToken);
 
         if (!products.Any())
         {

@@ -49,7 +49,9 @@ public class AssetController : ControllerBase
             .Take(pageSize)
             .ToListAsync(stoppingToken);
 
-        var totalAssets = await _context.Assets.CountAsync(stoppingToken);
+        var totalAssets = await _context.Assets
+                            .Where(m => m.Name.ToLower().Contains(filter))
+                            .CountAsync();
 
         if (!assets.Any())
         {

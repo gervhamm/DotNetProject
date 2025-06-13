@@ -12,16 +12,23 @@ public partial class ManageMetaPageModel : ObservableObject, INotifyPropertyChan
     private readonly ConnectivityService _connectivity;
     private readonly ModalErrorHandler _errorHandler;
     private readonly SyncService<Manufacturer, ManufacturerDto> _manufacturerSyncService;
+    private readonly SyncService<Product, ProductDto> _productSyncService;
+    private readonly SyncService<Asset, AssetDto> _assetSyncService;
 
     [ObservableProperty]
     private string _isOnlineColor = string.Empty;
 
-    public ManageMetaPageModel(ConnectivityService connectivityService, SeedDataService seedDataService, ModalErrorHandler errorHandler, SyncService<Manufacturer, ManufacturerDto> syncService)
+    public ManageMetaPageModel(ConnectivityService connectivityService, SeedDataService seedDataService, ModalErrorHandler errorHandler, 
+                                SyncService<Manufacturer, ManufacturerDto> manufacturerSyncService,
+                                SyncService<Product, ProductDto> productSyncService,
+                                SyncService<Asset, AssetDto> assetSyncService)
     {
         _connectivity = connectivityService;
         _seedDataService = seedDataService;
         _errorHandler = errorHandler;
-        _manufacturerSyncService = syncService;
+        _manufacturerSyncService = manufacturerSyncService;
+        _assetSyncService = assetSyncService;
+        _productSyncService = productSyncService;
 
         _connectivity.PropertyChanged += Connectivity_PropertyChanged;
 
@@ -50,6 +57,10 @@ public partial class ManageMetaPageModel : ObservableObject, INotifyPropertyChan
         {
             await _manufacturerSyncService.ProcessSyncQueueAsync();
             await _manufacturerSyncService.PullLatestRemoteChanges();
+            await _productSyncService.ProcessSyncQueueAsync();
+            await _productSyncService.PullLatestRemoteChanges();
+            await _assetSyncService.ProcessSyncQueueAsync();
+            await _assetSyncService.PullLatestRemoteChanges();
         }
         catch (Exception e)
         {

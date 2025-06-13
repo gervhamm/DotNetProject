@@ -58,8 +58,8 @@ namespace ArcsomAssetManagement.Client
         {
             var route = e.Target.Location.OriginalString;
 
-            // Check if the route is a login or register page
-            if (!route.Contains("main"))
+          
+            if (!route.Contains("main") && !route.Contains("manage"))
             {
                 if (!await _authService.IsLoggedInAsync())
                 {

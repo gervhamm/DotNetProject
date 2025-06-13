@@ -47,10 +47,8 @@ public partial class ManufacturerListPageModel : ObservableObject
     [RelayCommand]
     private async Task Appearing()
     {
-        //await CheckAuthAsync();
-        (Manufacturers, _pagination) = await _manufacturerRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize, "", _orderByDescending);
-        FilteredManufacturers = Manufacturers;
-        PageNumbers = PaginationHelper.SetPagenumbers(_pagination.CurrentPage, _pagination.TotalPages);
+        searchText = "";
+        await LoadManufacturers(Pagination);
     }
 
     [RelayCommand]
@@ -71,9 +69,13 @@ public partial class ManufacturerListPageModel : ObservableObject
         }
         else
         {
-            (List<Manufacturer> filtered, _pagination) = await _manufacturerRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize, filter: SearchText, _orderByDescending);
-
-            FilteredManufacturers = filtered;
+            var pagination = new PaginationModel
+            {
+                CurrentPage = 1,
+                PageSize = Pagination.PageSize,
+                TotalItems = 0
+            };
+            await LoadManufacturers(pagination, SearchText);
         }
     }
     [RelayCommand]
@@ -104,12 +106,18 @@ public partial class ManufacturerListPageModel : ObservableObject
                 break;
         }
         Pagination.CurrentPage = newPageNumber;
-        Appearing();
+        await LoadManufacturers(Pagination, searchText);
     }
     [RelayCommand]
     private async Task SortNameAsync()
     {
         _orderByDescending = !_orderByDescending;
         Appearing();
+    }
+    private async Task LoadManufacturers(PaginationModel pagination, string searchText = "")
+    {
+        (Manufacturers, Pagination) = await _manufacturerRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize, filter: searchText);
+        FilteredManufacturers = Manufacturers;
+        PageNumbers = PaginationHelper.SetPagenumbers(Pagination.CurrentPage, Pagination.TotalPages);
     }
 }

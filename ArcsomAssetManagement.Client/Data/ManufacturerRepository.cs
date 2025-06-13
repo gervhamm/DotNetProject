@@ -138,14 +138,17 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
 
         try
         {
-            var totalItems = await _database.Table<Manufacturer>().CountAsync();
+            var lowerFilter = filter.ToLowerInvariant();
+            var totalItems = await _database.Table<Manufacturer>()
+                                .Where(p => p.Name.ToLower().Contains(lowerFilter) ||
+                                p.Contact.Contains(lowerFilter))
+                                .CountAsync();
 
             AsyncTableQuery<Manufacturer> query = _database.Table<Manufacturer>();
             if (!string.IsNullOrWhiteSpace(filter))
             {
-                filter = filter.Trim().ToLowerInvariant();
-                query = query.Where(p => p.Name.Contains(filter) ||
-                                              p.Contact.Contains(filter));
+                query = query.Where(p => p.Name.ToLower().Contains(lowerFilter) ||
+                                              p.Contact.ToLower().Contains(lowerFilter));
             }
             var manufacturers = await query
                 .Skip((pageNumber - 1) * pageSize)
@@ -182,7 +185,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
             {
                 await _database.InsertAsync(new SyncQueueItem
                 {
-                    EntityType = item.Name,
+                    EntityType = nameof(Manufacturer),
                     EntityId = item.Id,
                     OperationType = OperationType.Create,
                     PayloadJson = JsonSerializer.Serialize(item)
@@ -207,7 +210,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
             {
                 await _database.InsertAsync(new SyncQueueItem
                 {
-                    EntityType = item.Name,
+                    EntityType = nameof(Manufacturer),
                     EntityId = item.Id,
                     OperationType = OperationType.Update,
                     PayloadJson = JsonSerializer.Serialize(item)
@@ -245,7 +248,7 @@ public class ManufacturerRepository : IOnlineRepository<ManufacturerDto>
 
         await _database.InsertAsync(new SyncQueueItem
         {
-            EntityType = item.Name,
+            EntityType = nameof(Manufacturer),
             EntityId = item.Id,
             OperationType = OperationType.Delete,
             PayloadJson = JsonSerializer.Serialize(item)

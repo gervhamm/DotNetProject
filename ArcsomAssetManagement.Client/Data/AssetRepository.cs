@@ -141,20 +141,26 @@ public class AssetRepository : IOnlineRepository<AssetDto>
 
         try
         {
-            var totalItems = await _database.Table<Asset>().CountAsync();
+            var lowerFilter = filter.ToLowerInvariant();
+            var totalItems = await _database.Table<Asset>()
+                                .Where(p => p.Name.ToLower().Contains(lowerFilter))
+                                .CountAsync();
 
             AsyncTableQuery<Asset> query = _database.Table<Asset>();
             if (!string.IsNullOrWhiteSpace(filter))
             {
-                filter = filter.Trim().ToLowerInvariant();
-                query = query.Where(p => p.Name.Contains(filter) ||
-                                            p.Product.Name.Contains(filter));
+                query = query.Where(p => p.Name.ToLower().Contains(lowerFilter));
             }
 
             var assets = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+
+            foreach(var asset in assets)
+            {
+                asset.Product = await _database.FindAsync<Product>(asset.ProductId);
+            }
 
             pagination.TotalItems = totalItems;
 
@@ -184,7 +190,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
             {
                 await _database.InsertAsync(new SyncQueueItem
                 {
-                    EntityType = item.Name,
+                    EntityType = nameof(Asset),
                     EntityId = item.Id,
                     OperationType = OperationType.Create,
                     PayloadJson = JsonSerializer.Serialize(item)
@@ -209,7 +215,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
             {
                 await _database.InsertAsync(new SyncQueueItem
                 {
-                    EntityType = item.Name,
+                    EntityType = nameof(Asset),
                     EntityId = item.Id,
                     OperationType = OperationType.Update,
                     PayloadJson = JsonSerializer.Serialize(item)
@@ -239,7 +245,7 @@ public class AssetRepository : IOnlineRepository<AssetDto>
 
         await _database.InsertAsync(new SyncQueueItem
         {
-            EntityType = item.Name,
+            EntityType = nameof(Asset),
             EntityId = item.Id,
             OperationType = OperationType.Delete,
             PayloadJson = JsonSerializer.Serialize(item)

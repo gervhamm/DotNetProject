@@ -2,15 +2,12 @@
 using ArcsomAssetManagement.Client.PageModels.Helpers;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
-using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
 public partial class AssetListPageModel : ObservableObject
 {
     private readonly AssetRepository _assetRepository;
-
-    private List<Product> _products = [];
 
     [ObservableProperty]
     private string searchText = string.Empty;
@@ -45,9 +42,8 @@ public partial class AssetListPageModel : ObservableObject
     [RelayCommand]
     private async Task Appearing()
     {
-        (Assets, _pagination) = await _assetRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize);
-        FilteredAssets = Assets;
-        PageNumbers = PaginationHelper.SetPagenumbers(_pagination.CurrentPage, _pagination.TotalPages);
+        SearchText = "";
+        await LoadAssets(Pagination);
     }
 
     [RelayCommand]
@@ -68,18 +64,19 @@ public partial class AssetListPageModel : ObservableObject
         }
         else
         {
-            (List<Asset> Assets, PaginationModel pagination) = await _assetRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize, filter: SearchText);
-            var filtered = Assets
-                .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                            (p.Product?.Name?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false))
-                .ToList();
-            FilteredAssets = filtered;
+            var pagination = new PaginationModel
+            {
+                CurrentPage = 1,
+                PageSize = Pagination.PageSize,
+                TotalItems = 0
+            };
+            await LoadAssets(pagination, SearchText);
         }
     }
     [RelayCommand]
     private async Task GoToPageAsync(string pageNumber)
     {
-        var newPageNumber = _pagination.CurrentPage;
+        var newPageNumber = Pagination.CurrentPage;
 
         switch (pageNumber)
         {
@@ -104,6 +101,12 @@ public partial class AssetListPageModel : ObservableObject
                 break;
         }
         Pagination.CurrentPage = newPageNumber;
-        Appearing();
+        await LoadAssets(Pagination, searchText);
+    }
+    private async Task LoadAssets(PaginationModel pagination, string searchText = "")
+    {
+        (Assets, Pagination) = await _assetRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize, filter: searchText);
+        FilteredAssets = Assets;
+        PageNumbers = PaginationHelper.SetPagenumbers(Pagination.CurrentPage, Pagination.TotalPages);
     }
 }

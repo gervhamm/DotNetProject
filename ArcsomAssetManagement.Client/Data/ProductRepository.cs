@@ -144,20 +144,28 @@ public class ProductRepository : IOnlineRepository<ProductDto>
 
         try
         {
-            var totalItems = await _database.Table<Product>().CountAsync();
+            var lowerFilter = filter.ToLowerInvariant();
+            var totalItems = await _database.Table<Product>()
+                                .Where(p => p.Name.ToLower().Contains(lowerFilter))
+                                .CountAsync();
 
             AsyncTableQuery<Product> query = _database.Table<Product>();
             if (!string.IsNullOrWhiteSpace(filter))
             {
-                filter = filter.Trim().ToLowerInvariant();
-                query = query.Where(p => p.Name.Contains(filter) ||
-                                            p.Manufacturer.Name.Contains(filter));
+                query = query.Where(p => p.Name.ToLower().Contains(lowerFilter));
             }
 
             var products = await query
                 .Skip((pageNumber - 1) * pageSize)
                 .Take(pageSize)
                 .ToListAsync();
+
+            var manufacturers = await _database.Table<Manufacturer>().ToListAsync();
+
+            foreach (var product in products)
+            {
+                product.Manufacturer = manufacturers.FirstOrDefault(m => m.Id == product.ManufacturerId);
+            }
 
             pagination.TotalItems = totalItems;
 
@@ -187,7 +195,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
             {
                 await _database.InsertAsync(new SyncQueueItem
                 {
-                    EntityType = item.Name,
+                    EntityType = nameof(Product),
                     EntityId = item.Id,
                     OperationType = OperationType.Create,
                     PayloadJson = JsonSerializer.Serialize(item)
@@ -212,7 +220,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
             {
                 await _database.InsertAsync(new SyncQueueItem
                 {
-                    EntityType = item.Name,
+                    EntityType = nameof(Product),
                     EntityId = item.Id,
                     OperationType = OperationType.Update,
                     PayloadJson = JsonSerializer.Serialize(item)
@@ -242,7 +250,7 @@ public class ProductRepository : IOnlineRepository<ProductDto>
 
         await _database.InsertAsync(new SyncQueueItem
         {
-            EntityType = item.Name,
+            EntityType = nameof(Product),
             EntityId = item.Id,
             OperationType = OperationType.Delete,
             PayloadJson = JsonSerializer.Serialize(item)

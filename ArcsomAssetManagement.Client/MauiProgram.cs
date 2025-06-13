@@ -78,6 +78,22 @@ namespace ArcsomAssetManagement.Client
                 return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
             });
 
+            builder.Services.AddSingleton<SyncService<Asset, AssetDto>>(provider =>
+            {
+                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+                var onlineRepository = provider.GetRequiredService<AssetRepository>();
+                var mapper = provider.GetRequiredService<IMapper>();
+                return new SyncService<Asset, AssetDto>(sqliteConnection, onlineRepository, mapper);
+            });
+
+            builder.Services.AddSingleton<SyncService<Product, ProductDto>>(provider =>
+            {
+                var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
+                var onlineRepository = provider.GetRequiredService<ProductRepository>();
+                var mapper = provider.GetRequiredService<IMapper>();
+                return new SyncService<Product, ProductDto>(sqliteConnection, onlineRepository, mapper);
+            });
+
             // Repositories
             builder.Services.AddTransient<SQLiteAsyncConnection>(provider =>
             {

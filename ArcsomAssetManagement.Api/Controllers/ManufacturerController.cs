@@ -53,7 +53,10 @@ public class ManufacturerController : ControllerBase
             .Take(pageSize)
             .ToListAsync(stoppingToken);
 
-        var totalManufacturers = await _context.Manufacturers.CountAsync(stoppingToken);
+        var totalManufacturers = await _context.Manufacturers
+                                    .Where(m => m.Name.ToLower().Contains(filter) ||
+                                                m.Contact.ToLower().Contains(filter))
+                                    .CountAsync(stoppingToken);
 
         if (!manufacturers.Any())
         {

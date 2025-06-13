@@ -31,28 +31,32 @@ public class SyncService<TDomain, TDto>
 
         foreach (var item in queueItems)
         {
-            var entity = JsonSerializer.Deserialize<TDomain>(item.PayloadJson);
-            var dto = _mapper.Map<TDto>(entity);
-            switch (item.OperationType)
+            if(item.EntityType == typeof(TDomain).Name)
             {
-                case OperationType.Create:
-                    await _onlineRepository.SaveItemOnlineAsync(dto);
-                    break;
-                case OperationType.Update:
-                    await _onlineRepository.UpdateItemOnlineAsync(dto);
-                    break;
-                case OperationType.Delete:
-                    await _onlineRepository.DeleteItemOnlineAsync(entity.Id);
-                    break;
-            }
+                var entity = JsonSerializer.Deserialize<TDomain>(item.PayloadJson);
+                var dto = _mapper.Map<TDto>(entity);
+                switch (item.OperationType)
+                {
+                    case OperationType.Create:
+                        await _onlineRepository.SaveItemOnlineAsync(dto);
+                        break;
+                    case OperationType.Update:
+                        await _onlineRepository.UpdateItemOnlineAsync(dto);
+                        break;
+                    case OperationType.Delete:
+                        await _onlineRepository.DeleteItemOnlineAsync(entity.Id);
+                        break;
+                }
 
-            await _database.DeleteAsync(item);
+                await _database.DeleteAsync(item);
+            }
         }
     }
 
     public async Task PullLatestRemoteChanges()
     {
         await _database.DeleteAllAsync<TDomain>();
+        await _database.ExecuteAsync("DELETE FROM sqlite_sequence WHERE name = ?", typeof(TDomain).Name);
         var dtos = await _onlineRepository.ListOnlineAsync();
         await _onlineRepository.SaveToOfflineAsync(dtos);
     }
