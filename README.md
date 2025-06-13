@@ -39,13 +39,9 @@ It removes the token if the user logs out.
 #### AuthHeaderHandler
 Whenever a request is made to the Web API, this handler adds the JWT token to the Authorization header of the request if needed.
 
+#### Repositories
+On the client side, there are repositories for each of the main entities: Assets, Manufacturers, and Products. Each of the repositories can communicate with the Web API and the local database.
 
-
-
-### Seeding data for the database
-Running the application will automatically seed data into the database. (if there is none)
-
-Assets, Manufacturers and Products are generated using the 'Faker.net' package.
 
 ## API
 There are api's available. Check the swagger documentation for more information.
