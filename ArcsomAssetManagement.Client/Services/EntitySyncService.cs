@@ -5,7 +5,7 @@ using System.Text.Json;
 
 namespace ArcsomAssetManagement.Client.Services;
 
-public class SyncService<TDomain, TDto> 
+public class EntitySyncService<TDomain, TDto> 
     where TDomain : class, IIdentifiable, new()
     where TDto : class, new()
 {
@@ -13,7 +13,7 @@ public class SyncService<TDomain, TDto>
     private readonly IOnlineRepository<TDto> _onlineRepository;
     private readonly IMapper _mapper;
 
-    public SyncService(SQLiteAsyncConnection database, IOnlineRepository<TDto> onlineRepository, IMapper mapper)
+    public EntitySyncService(SQLiteAsyncConnection database, IOnlineRepository<TDto> onlineRepository, IMapper mapper)
     {
         _database = database;
         _onlineRepository = onlineRepository;

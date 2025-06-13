@@ -69,29 +69,30 @@ namespace ArcsomAssetManagement.Client
             builder.Services.AddTransient<AuthHeaderHandler>();
             builder.Services.AddSingleton<AuthService>();
             builder.Services.AddSingleton<AppFaker>();
+            builder.Services.AddSingleton<SyncManager>();
 
-            builder.Services.AddSingleton<SyncService<Manufacturer, ManufacturerDto>>(provider =>
+            builder.Services.AddSingleton<EntitySyncService<Manufacturer, ManufacturerDto>>(provider =>
             {
                 var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
                 var onlineRepository = provider.GetRequiredService<ManufacturerRepository>();
                 var mapper = provider.GetRequiredService<IMapper>();
-                return new SyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
+                return new EntitySyncService<Manufacturer, ManufacturerDto>(sqliteConnection, onlineRepository, mapper);
             });
 
-            builder.Services.AddSingleton<SyncService<Asset, AssetDto>>(provider =>
+            builder.Services.AddSingleton<EntitySyncService<Asset, AssetDto>>(provider =>
             {
                 var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
                 var onlineRepository = provider.GetRequiredService<AssetRepository>();
                 var mapper = provider.GetRequiredService<IMapper>();
-                return new SyncService<Asset, AssetDto>(sqliteConnection, onlineRepository, mapper);
+                return new EntitySyncService<Asset, AssetDto>(sqliteConnection, onlineRepository, mapper);
             });
 
-            builder.Services.AddSingleton<SyncService<Product, ProductDto>>(provider =>
+            builder.Services.AddSingleton<EntitySyncService<Product, ProductDto>>(provider =>
             {
                 var sqliteConnection = provider.GetRequiredService<SQLiteAsyncConnection>();
                 var onlineRepository = provider.GetRequiredService<ProductRepository>();
                 var mapper = provider.GetRequiredService<IMapper>();
-                return new SyncService<Product, ProductDto>(sqliteConnection, onlineRepository, mapper);
+                return new EntitySyncService<Product, ProductDto>(sqliteConnection, onlineRepository, mapper);
             });
 
             // Repositories
