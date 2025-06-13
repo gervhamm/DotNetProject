@@ -97,20 +97,8 @@
                      Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                      Size="{StaticResource IconSize}" />
 
-    <FontImageSource x:Key="IconProjects"
-                     Glyph="{x:Static f:FluentUI.list_24_regular}"
-                     FontFamily="{x:Static f:FluentUI.FontFamily}"
-                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
-                     Size="{StaticResource IconSize}" />
-
     <FontImageSource x:Key="IconMeta"
                      Glyph="{x:Static f:FluentUI.info_24_regular}"
-                     FontFamily="{x:Static f:FluentUI.FontFamily}"
-                     Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
-                     Size="{StaticResource IconSize}" />
-
-    <FontImageSource x:Key="IconRibbon"
-                     Glyph="{x:Static f:FluentUI.ribbon_20_regular}"
                      FontFamily="{x:Static f:FluentUI.FontFamily}"
                      Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                      Size="{StaticResource IconSize}" />
@@ -127,13 +115,7 @@
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
                 Size="{StaticResource IconSize}" />
 
-        <FontImageSource x:Key="IconClean"
-                Glyph="{x:Static f:FluentUI.broom_32_regular}"
-                FontFamily="{x:Static f:FluentUI.FontFamily}"
-                Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
-                Size="{StaticResource size240}" />
-
-        <FontImageSource x:Key="IconLight"
+    <FontImageSource x:Key="IconLight"
                 Glyph="{x:Static f:FluentUI.weather_sunny_28_regular}"
                 FontFamily="{x:Static f:FluentUI.FontFamily}"
                 Color="{AppThemeBinding Light={StaticResource DarkOnLightBackground}, Dark={StaticResource LightOnDarkBackground}}"
