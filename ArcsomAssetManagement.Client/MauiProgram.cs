@@ -40,9 +40,12 @@ namespace ArcsomAssetManagement.Client
             var content = reader.ReadToEnd();
             var jsonDoc = JsonDocument.Parse(content);
 
-            var apiSettings = JsonSerializer.Deserialize<ApiSettings>(
-                jsonDoc.RootElement.GetProperty("ApiSettings").GetRawText()
-            );
+            var api = jsonDoc.RootElement.GetProperty("ApiSettings").GetRawText();
+            if (!OperatingSystem.IsWindows())
+            {
+                api = jsonDoc.RootElement.GetProperty("ApiSettings").GetRawText();
+            }
+            var apiSettings = JsonSerializer.Deserialize<ApiSettings>(api);
 
             builder.Services.AddSingleton(apiSettings);
 
