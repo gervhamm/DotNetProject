@@ -39,34 +39,6 @@ public class SeedDataService
             await _faker.SeedManufacturers(token);
             await _faker.SeedProducts(token);
             await _faker.SeedAssets(token);
-
-            //if (payloadAssets is not null)
-            //{
-            //    var existingProducts = await _productRepository.ListAsync();
-
-            //    foreach (var asset in payloadAssets.Assets)
-            //    {
-            //        if (asset is null)
-            //        {
-            //            continue;
-            //        }
-
-            //        if (asset.Product is not null)
-            //        {
-            //            if (existingProducts.TryGetValue(product.Manufacturer.Name, out var existingManufacturer))
-            //            {
-            //                product.Manufacturer = existingManufacturer;
-            //            }
-            //            else
-            //            {
-            //                await _manufacturerRepository.SaveItemAsync(product.Manufacturer);
-            //                existingManufacturers[product.Manufacturer.Name] = product.Manufacturer;
-            //            }
-            //        }
-
-            //        await _productRepository.SaveItemAsync(product);
-            //    }
-            //}
         }
         catch (Exception e)
         {
