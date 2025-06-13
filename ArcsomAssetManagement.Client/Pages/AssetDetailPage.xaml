@@ -6,17 +6,11 @@
             xmlns:pages="clr-namespace:ArcsomAssetManagement.Client.Pages"  
             xmlns:sf="clr-namespace:Syncfusion.Maui.Toolkit.TextInputLayout;assembly=Syncfusion.Maui.Toolkit"  
             xmlns:controls="clr-namespace:ArcsomAssetManagement.Client.Pages.Controls"  
-            xmlns:toolkit="http://schemas.microsoft.com/dotnet/2022/maui/toolkit"
             xmlns:fonts="clr-namespace:Fonts"  
             x:Class="ArcsomAssetManagement.Client.Pages.AssetDetailPage"  
             x:DataType="pageModels:AssetDetailPageModel"  
             Title="Asset">
 
-    <ContentPage.Behaviors>
-        <toolkit:EventToCommandBehavior
-                EventName="Appearing"                
-                Command="{Binding AppearingCommand}" />
-    </ContentPage.Behaviors>
     <ContentPage.Resources>
 
     </ContentPage.Resources>

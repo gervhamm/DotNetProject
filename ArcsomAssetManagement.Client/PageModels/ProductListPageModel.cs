@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
-public partial class ProductListPageModel : BasePageModel
+public partial class ProductListPageModel : ObservableObject
 {
     private readonly ProductRepository _productRepository;
     
@@ -30,7 +30,7 @@ public partial class ProductListPageModel : BasePageModel
     [ObservableProperty]
     private int selectedPage;
 
-    public ProductListPageModel(ProductRepository productRepository, AuthService authService) : base(authService)
+    public ProductListPageModel(ProductRepository productRepository)
     {
         _productRepository = productRepository;
         _pagination = new PaginationModel
@@ -45,10 +45,7 @@ public partial class ProductListPageModel : BasePageModel
     [RelayCommand]
     private async Task Appearing()
     {
-        await CheckAuthAsync();
-        (Products, _pagination) = await _productRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize);
-        FilteredProducts = Products;
-        PageNumbers = PaginationHelper.SetPagenumbers(_pagination.CurrentPage, _pagination.TotalPages);
+        await LoadManufacturers(Pagination);
     }
 
     [RelayCommand]
@@ -69,18 +66,19 @@ public partial class ProductListPageModel : BasePageModel
         }
         else
         {
-            (List<Product> Products, PaginationModel pagination) = await _productRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize, filter: SearchText);
-            var filtered = Products
-                .Where(p => p.Name.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ||
-                            (p.Manufacturer?.Name?.Contains(SearchText, StringComparison.OrdinalIgnoreCase) ?? false))
-                .ToList();
-            FilteredProducts = filtered;
+            var pagination = new PaginationModel
+            {
+                CurrentPage = 1,
+                PageSize = Pagination.PageSize,
+                TotalItems = 0
+            };
+            await LoadManufacturers(pagination, SearchText);
         }
     }
     [RelayCommand]
     private async Task GoToPageAsync(string pageNumber)
     {
-        var newPageNumber = _pagination.CurrentPage;
+        var newPageNumber = Pagination.CurrentPage;
 
         switch (pageNumber)
         {
@@ -106,5 +104,13 @@ public partial class ProductListPageModel : BasePageModel
         }
         Pagination.CurrentPage = newPageNumber;
         Appearing();
+    }
+
+    private async Task LoadManufacturers(PaginationModel pagination, string searchText = "")
+    {
+        (Products, Pagination) = await _productRepository.ListAsync(pageNumber: pagination.CurrentPage, pageSize: pagination.PageSize, filter: searchText);
+        FilteredProducts = Products;
+        PageNumbers = PaginationHelper.SetPagenumbers(Pagination.CurrentPage, Pagination.TotalPages);
+        
     }
 }

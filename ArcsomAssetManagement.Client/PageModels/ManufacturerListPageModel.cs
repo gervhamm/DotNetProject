@@ -6,7 +6,7 @@ using System.Collections.ObjectModel;
 
 namespace ArcsomAssetManagement.Client.PageModels;
 
-public partial class ManufacturerListPageModel : BasePageModel
+public partial class ManufacturerListPageModel : ObservableObject
 {
     private readonly ManufacturerRepository _manufacturerRepository;
  
@@ -31,7 +31,7 @@ public partial class ManufacturerListPageModel : BasePageModel
     [ObservableProperty]
     private int selectedPage;
 
-    public ManufacturerListPageModel(ManufacturerRepository manufacturerRepository, AuthService authService) : base(authService)
+    public ManufacturerListPageModel(ManufacturerRepository manufacturerRepository)
     {
         _manufacturerRepository = manufacturerRepository;
         _pagination = new PaginationModel
@@ -47,7 +47,7 @@ public partial class ManufacturerListPageModel : BasePageModel
     [RelayCommand]
     private async Task Appearing()
     {
-        await CheckAuthAsync();
+        //await CheckAuthAsync();
         (Manufacturers, _pagination) = await _manufacturerRepository.ListAsync(pageNumber: _pagination.CurrentPage, pageSize: _pagination.PageSize, "", _orderByDescending);
         FilteredManufacturers = Manufacturers;
         PageNumbers = PaginationHelper.SetPagenumbers(_pagination.CurrentPage, _pagination.TotalPages);

@@ -8,10 +8,16 @@ public class AuthService
         var tokenExpiry = await TokenStorage.GetTokenExpriyAsync();
 
         if (string.IsNullOrEmpty(token) || string.IsNullOrEmpty(tokenExpiry))
+        {
+            await Shell.Current.GoToAsync("//main");
             return false;
+        }
 
         if (!DateTime.TryParse(tokenExpiry, out var expiry))
+        {
+            await Shell.Current.GoToAsync("//main");
             return false;
+        }
 
         if (expiry < DateTime.UtcNow)
         {

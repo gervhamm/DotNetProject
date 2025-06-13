@@ -11,7 +11,6 @@ public partial class MainPageModel : BasePageModel
     {
         _authRepository = authRepository;
         _errorHandler = errorHandler;
-        _authRepository = authRepository;
         //TODO: _seedDataService = seedDataService;
     }
 

@@ -56,14 +56,20 @@ namespace ArcsomAssetManagement.Client
 
         private async void OnShellNavigating(object sender, ShellNavigatingEventArgs e)
         {
-            //var route = e.Target.Location.OriginalString;
+            var route = e.Target.Location.OriginalString;
 
-            //if (!await _authService.IsLoggedInAsync())
-            //{
-            //    await DisplaySnackbarAsync("Not logged in");
-            //    e.Cancel(); // Block the navigation
-            //    await Shell.Current.GoToAsync("//main");
-            //}
+            // Check if the route is a login or register page
+            if (!route.Contains("main"))
+            {
+                if (!await _authService.IsLoggedInAsync())
+                {
+                    await DisplaySnackbarAsync("Not logged in");
+                    e.Cancel();
+                    await Shell.Current.GoToAsync("//main");
+                }
+            }
+
+            
         }
     }
 }
