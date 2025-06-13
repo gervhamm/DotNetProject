@@ -43,7 +43,7 @@ namespace ArcsomAssetManagement.Client
             var api = jsonDoc.RootElement.GetProperty("ApiSettings").GetRawText();
             if (!OperatingSystem.IsWindows())
             {
-                api = jsonDoc.RootElement.GetProperty("ApiSettings").GetRawText();
+                api = jsonDoc.RootElement.GetProperty("ApiSettingsAndroid").GetRawText();
             }
             var apiSettings = JsonSerializer.Deserialize<ApiSettings>(api);
 
